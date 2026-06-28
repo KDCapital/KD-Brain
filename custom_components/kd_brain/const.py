@@ -16,11 +16,13 @@ MODEL: Final = "KD Brain HEMS"
 PLATFORMS: Final[list[Platform]] = [Platform.SENSOR, Platform.BINARY_SENSOR]
 
 # --- Config / options keys -------------------------------------------------
+CONF_SUPPLIER: Final = "supplier"
 CONF_PRICE_SOURCE: Final = "price_source"
 CONF_PRICE_INTERVAL: Final = "price_interval"  # display aggregation: hourly | quarterly
 CONF_ENERGY_TAX: Final = "energy_tax"
 CONF_SUPPLIER_MARKUP: Final = "supplier_markup"
 CONF_FEED_IN_MARKUP: Final = "feed_in_markup"
+CONF_MONTHLY_FEE: Final = "monthly_fee"
 CONF_VAT: Final = "vat"
 CONF_PRICE_LOW_THRESHOLD: Final = "price_low_threshold"
 CONF_UPDATE_INTERVAL_MINUTES: Final = "update_interval_minutes"
@@ -40,6 +42,7 @@ DEFAULT_PRICE_INTERVAL: Final = INTERVAL_HOURLY
 DEFAULT_ENERGY_TAX: Final = Decimal("0.1088")  # energiebelasting €/kWh (excl. BTW)
 DEFAULT_SUPPLIER_MARKUP: Final = Decimal("0.02")  # leveranciersopslag €/kWh (excl. BTW)
 DEFAULT_FEED_IN_MARKUP: Final = Decimal("0")  # terugleverkosten €/kWh (excl. BTW)
+DEFAULT_MONTHLY_FEE: Final = Decimal("6.00")  # vaste leveringskosten €/maand
 DEFAULT_VAT: Final = Decimal("0.21")  # BTW fraction
 DEFAULT_PRICE_LOW_THRESHOLD: Final = Decimal("0.20")  # all-in €/kWh
 DEFAULT_UPDATE_INTERVAL_MINUTES: Final = 30

@@ -1,4 +1,9 @@
-"""Config and options flow for KD Brain."""
+"""Config and options flow for KD Brain.
+
+The flow lets users pick their energy supplier so the tariff components are
+pre-filled from a curated dataset, while keeping every value editable. Choosing
+"manual" (or simply editing the pre-filled values) gives full manual control.
+"""
 
 from __future__ import annotations
 
@@ -15,6 +20,7 @@ from homeassistant.helpers.selector import (
     NumberSelector,
     NumberSelectorConfig,
     NumberSelectorMode,
+    SelectOptionDict,
     SelectSelector,
     SelectSelectorConfig,
     SelectSelectorMode,
@@ -24,14 +30,17 @@ import voluptuous as vol
 from .const import (
     CONF_ENERGY_TAX,
     CONF_FEED_IN_MARKUP,
+    CONF_MONTHLY_FEE,
     CONF_PRICE_INTERVAL,
     CONF_PRICE_LOW_THRESHOLD,
     CONF_PRICE_SOURCE,
+    CONF_SUPPLIER,
     CONF_SUPPLIER_MARKUP,
     CONF_UPDATE_INTERVAL_MINUTES,
     CONF_VAT,
     DEFAULT_ENERGY_TAX,
     DEFAULT_FEED_IN_MARKUP,
+    DEFAULT_MONTHLY_FEE,
     DEFAULT_PRICE_INTERVAL,
     DEFAULT_PRICE_LOW_THRESHOLD,
     DEFAULT_PRICE_SOURCE,
@@ -45,19 +54,58 @@ from .const import (
     MIN_UPDATE_INTERVAL_MINUTES,
     PRICE_SOURCE_EPEXPRIJZEN,
 )
+from .data.providers import MANUAL, PROVIDERS
 
 TITLE = "KD Brain"
 
+# Tariff/price values (everything except the supplier selection).
 _DEFAULTS: dict[str, Any] = {
     CONF_PRICE_SOURCE: DEFAULT_PRICE_SOURCE,
     CONF_PRICE_INTERVAL: DEFAULT_PRICE_INTERVAL,
     CONF_ENERGY_TAX: float(DEFAULT_ENERGY_TAX),
     CONF_SUPPLIER_MARKUP: float(DEFAULT_SUPPLIER_MARKUP),
     CONF_FEED_IN_MARKUP: float(DEFAULT_FEED_IN_MARKUP),
+    CONF_MONTHLY_FEE: float(DEFAULT_MONTHLY_FEE),
     CONF_VAT: float(DEFAULT_VAT),
     CONF_PRICE_LOW_THRESHOLD: float(DEFAULT_PRICE_LOW_THRESHOLD),
     CONF_UPDATE_INTERVAL_MINUTES: DEFAULT_UPDATE_INTERVAL_MINUTES,
 }
+
+
+def _supplier_options() -> list[SelectOptionDict]:
+    """Build the supplier dropdown: known providers plus a manual option."""
+    options = [
+        SelectOptionDict(value=provider.id, label=provider.name)
+        for provider in sorted(PROVIDERS.values(), key=lambda p: p.name.lower())
+    ]
+    options.append(
+        SelectOptionDict(value=MANUAL, label="Anders / handmatig (enter manually)")
+    )
+    return options
+
+
+def _supplier_schema(default: str) -> vol.Schema:
+    """Build the schema for the single supplier-selection step."""
+    return vol.Schema(
+        {
+            vol.Required(CONF_SUPPLIER, default=default): SelectSelector(
+                SelectSelectorConfig(
+                    options=_supplier_options(), mode=SelectSelectorMode.DROPDOWN
+                )
+            )
+        }
+    )
+
+
+def _apply_provider(values: Mapping[str, Any], supplier: str) -> dict[str, Any]:
+    """Return values with supplier-specific fields pre-filled from the dataset."""
+    merged = {**_DEFAULTS, **{k: v for k, v in values.items() if k in _DEFAULTS}}
+    provider = PROVIDERS.get(supplier)
+    if provider is not None:
+        merged[CONF_SUPPLIER_MARKUP] = float(provider.markup)
+        merged[CONF_FEED_IN_MARKUP] = float(provider.feed_in)
+        merged[CONF_MONTHLY_FEE] = float(provider.monthly_fee)
+    return merged
 
 
 def _price_per_kwh() -> NumberSelector:
@@ -73,8 +121,8 @@ def _price_per_kwh() -> NumberSelector:
     )
 
 
-def _build_schema(values: Mapping[str, Any]) -> vol.Schema:
-    """Build the shared options schema, pre-filled with ``values``."""
+def _values_schema(values: Mapping[str, Any]) -> vol.Schema:
+    """Build the tariff/price values schema, pre-filled with ``values``."""
 
     def default(key: str) -> Any:
         return values.get(key, _DEFAULTS[key])
@@ -108,6 +156,17 @@ def _build_schema(values: Mapping[str, Any]) -> vol.Schema:
             vol.Required(
                 CONF_FEED_IN_MARKUP, default=default(CONF_FEED_IN_MARKUP)
             ): _price_per_kwh(),
+            vol.Required(
+                CONF_MONTHLY_FEE, default=default(CONF_MONTHLY_FEE)
+            ): NumberSelector(
+                NumberSelectorConfig(
+                    min=0,
+                    max=100,
+                    step="any",
+                    mode=NumberSelectorMode.BOX,
+                    unit_of_measurement="€/maand",
+                )
+            ),
             vol.Required(CONF_VAT, default=default(CONF_VAT)): NumberSelector(
                 NumberSelectorConfig(
                     min=0, max=1, step=0.01, mode=NumberSelectorMode.BOX
@@ -138,14 +197,31 @@ class KDBrainConfigFlow(ConfigFlow, domain=DOMAIN):
     VERSION = 1
     MINOR_VERSION = 1
 
+    def __init__(self) -> None:
+        """Initialise transient flow state."""
+        self._supplier: str = MANUAL
+
     async def async_step_user(
         self, user_input: dict[str, Any] | None = None
     ) -> ConfigFlowResult:
-        """Handle the initial configuration step."""
+        """Step 1: choose the energy supplier (or manual)."""
         if user_input is not None:
-            return self.async_create_entry(title=TITLE, data={}, options=user_input)
+            self._supplier = user_input[CONF_SUPPLIER]
+            return await self.async_step_tariff()
         return self.async_show_form(
-            step_id="user", data_schema=_build_schema(_DEFAULTS)
+            step_id="user", data_schema=_supplier_schema(MANUAL)
+        )
+
+    async def async_step_tariff(
+        self, user_input: dict[str, Any] | None = None
+    ) -> ConfigFlowResult:
+        """Step 2: confirm/adjust the (pre-filled) tariff values."""
+        if user_input is not None:
+            options = {CONF_SUPPLIER: self._supplier, **user_input}
+            return self.async_create_entry(title=TITLE, data={}, options=options)
+        defaults = _apply_provider(_DEFAULTS, self._supplier)
+        return self.async_show_form(
+            step_id="tariff", data_schema=_values_schema(defaults)
         )
 
     @staticmethod
@@ -158,13 +234,48 @@ class KDBrainConfigFlow(ConfigFlow, domain=DOMAIN):
 class KDBrainOptionsFlow(OptionsFlow):
     """Handle changes to KD Brain options after setup."""
 
+    def __init__(self) -> None:
+        """Initialise transient flow state."""
+        self._supplier: str = MANUAL
+
     async def async_step_init(
         self, user_input: dict[str, Any] | None = None
     ) -> ConfigFlowResult:
-        """Manage the tariff and price options."""
+        """Offer a supplier preset or manual editing."""
+        return self.async_show_menu(step_id="init", menu_options=["supplier", "manual"])
+
+    async def async_step_supplier(
+        self, user_input: dict[str, Any] | None = None
+    ) -> ConfigFlowResult:
+        """Pick a supplier to pre-fill the tariff values."""
         if user_input is not None:
-            return self.async_create_entry(title="", data=user_input)
+            self._supplier = user_input[CONF_SUPPLIER]
+            return await self.async_step_values()
+        current = self.config_entry.options.get(CONF_SUPPLIER, MANUAL)
         return self.async_show_form(
-            step_id="init",
-            data_schema=_build_schema(self.config_entry.options),
+            step_id="supplier", data_schema=_supplier_schema(current)
+        )
+
+    async def async_step_manual(
+        self, user_input: dict[str, Any] | None = None
+    ) -> ConfigFlowResult:
+        """Edit the current tariff values directly."""
+        self._supplier = self.config_entry.options.get(CONF_SUPPLIER, MANUAL)
+        return await self.async_step_values(user_input)
+
+    async def async_step_values(
+        self, user_input: dict[str, Any] | None = None
+    ) -> ConfigFlowResult:
+        """Confirm/adjust the tariff values and save."""
+        if user_input is not None:
+            saved = {CONF_SUPPLIER: self._supplier, **user_input}
+            return self.async_create_entry(title="", data=saved)
+
+        current = self.config_entry.options
+        if self._supplier in PROVIDERS:
+            defaults = _apply_provider(current, self._supplier)
+        else:
+            defaults = {**_DEFAULTS, **current}
+        return self.async_show_form(
+            step_id="values", data_schema=_values_schema(defaults)
         )

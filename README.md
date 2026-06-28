@@ -20,7 +20,10 @@ beslissing zien **waarom** die genomen is.
 - 🇳🇱 **Nederlandse day-ahead EPEX-prijzen** via [epexprijzen.nl](https://epexprijzen.nl) — vandaag
   én morgen, in **15-minuten (MTU)** resolutie met optionele uur-aggregatie.
 - 💶 **All-in prijsopbouw**: kale marktprijs + energiebelasting + leveranciersopslag + BTW, plus
-  aparte terugleververgoeding. Alle componenten configureerbaar, niets hardcoded.
+  aparte terugleververgoeding en vaste leveringskosten. Alle componenten configureerbaar, niets hardcoded.
+- 🏷️ **Leverancier-presets**: kies je energieleverancier (21 NL dynamische leveranciers) en de opslag,
+  terugleverkosten en vaste kosten worden automatisch ingevuld — of vul alles handmatig in. Energiebelasting
+  en BTW zijn landelijke waarden.
 - 📊 Sensoren voor huidige prijs, volgende prijs, dag-minimum/-maximum/-gemiddelde en een
   data-sensor met de volledige prijscurve (klaar voor grafieken/ApexCharts).
 - 🟢 Binary sensor "prijs laag nu" t.o.v. een instelbare drempel of het daggemiddelde.

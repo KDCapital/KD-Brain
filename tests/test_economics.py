@@ -19,6 +19,7 @@ def _tariff() -> TariffConfig:
         energy_tax=Decimal("0.10"),
         supplier_markup=Decimal("0.02"),
         feed_in_markup=Decimal("0"),
+        monthly_fee=Decimal("6.00"),
         vat=Decimal("0.21"),
     )
 
@@ -33,6 +34,7 @@ def test_feed_in_price() -> None:
         energy_tax=Decimal("0.10"),
         supplier_markup=Decimal("0.02"),
         feed_in_markup=Decimal("0.01"),
+        monthly_fee=Decimal("6.00"),
         vat=Decimal("0.21"),
     )
     # (0.20 - 0.01) * 1.21 = 0.2299

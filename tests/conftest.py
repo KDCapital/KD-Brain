@@ -38,9 +38,11 @@ if sys.platform == "win32":
 from custom_components.kd_brain.const import (
     CONF_ENERGY_TAX,
     CONF_FEED_IN_MARKUP,
+    CONF_MONTHLY_FEE,
     CONF_PRICE_INTERVAL,
     CONF_PRICE_LOW_THRESHOLD,
     CONF_PRICE_SOURCE,
+    CONF_SUPPLIER,
     CONF_SUPPLIER_MARKUP,
     CONF_UPDATE_INTERVAL_MINUTES,
     CONF_VAT,
@@ -48,6 +50,7 @@ from custom_components.kd_brain.const import (
     INTERVAL_QUARTERLY,
     PRICE_SOURCE_EPEXPRIJZEN,
 )
+from custom_components.kd_brain.data.providers import MANUAL
 from custom_components.kd_brain.data.sources.epexprijzen import API_URL
 
 # A deterministic payload: two hours of quarters on the "today" date plus one
@@ -71,16 +74,21 @@ PRICE_PAYLOAD: dict[str, Any] = {
     ],
 }
 
-OPTIONS: dict[str, Any] = {
+# The tariff/price values shown on the second flow step (everything but supplier).
+VALUES: dict[str, Any] = {
     CONF_PRICE_SOURCE: PRICE_SOURCE_EPEXPRIJZEN,
     CONF_PRICE_INTERVAL: INTERVAL_QUARTERLY,
     CONF_ENERGY_TAX: 0.10,
     CONF_SUPPLIER_MARKUP: 0.02,
     CONF_FEED_IN_MARKUP: 0.0,
+    CONF_MONTHLY_FEE: 6.0,
     CONF_VAT: 0.21,
     CONF_PRICE_LOW_THRESHOLD: 0.20,
     CONF_UPDATE_INTERVAL_MINUTES: 30,
 }
+
+# Full stored options = supplier choice + tariff values.
+OPTIONS: dict[str, Any] = {CONF_SUPPLIER: MANUAL, **VALUES}
 
 
 @pytest.fixture(autouse=True)

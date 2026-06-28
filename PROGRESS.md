@@ -30,7 +30,8 @@
 - ✅ Repo-scaffolding: `manifest.json`, `hacs.json`, `pyproject.toml`, `LICENSE` (MIT), `README`, `CONTRIBUTING`, `CHANGELOG`, `.gitignore`
 - ✅ CI: GitHub Actions (ruff, ruff-format, mypy, pylint, pytest) + `validate.yml` (hassfest, HACS) + Dependabot
 - ✅ Integratiekern: `const.py`, `__init__.py` (typed `runtime_data`, setup/unload), `entity.py` (device + stabiele unique_ids)
-- ✅ Datalaag: `data/models.py` (`PricePoint`, `PriceSeries`), `economics.py` (`TariffConfig`, all-in/teruglever), `PriceSource` protocol, `EpexPrijzenSource` (geverifieerde API)
+- ✅ Datalaag: `data/models.py` (`PricePoint`, `PriceSeries`), `economics.py` (`TariffConfig`, all-in/teruglever/vaste kosten), `PriceSource` protocol, `EpexPrijzenSource` (geverifieerde API)
+- ✅ Leverancier-presets: `data/providers.py` (21 NL leveranciers, opslag/teruglever/vaste kosten/batterijsturing), two-step config flow met automatische prefill + handmatige optie
 - ✅ Coordinator: `KDBrainPriceCoordinator` (DataUpdateCoordinator, configureerbaar interval, repairs bij storing, `kd_brain_prices_updated` event)
 - ✅ Config Flow + Options Flow (alle tariefcomponenten configureerbaar, single instance)
 - ✅ Diagnostics (met redactie) + Repairs (prijsbron onbereikbaar)
@@ -54,6 +55,7 @@
 |------|------|:------:|:--------:|
 | epexprijzen.nl | prijzen (REST) | ✅ | M1 |
 | Eigen leverancier-tarieven | tariefmodel | ✅ | M1 |
+| Leverancier-presets (21 NL) | tariefdata | ✅ | M1 |
 | Onbalansprijzen | prijzen | ⬜ | M2 |
 | ENTSO-E (fallback) | prijzen | ⬜ | M5 |
 | HomeWizard P1 | telemetrie (entity-adapter) | ⬜ | M2 |

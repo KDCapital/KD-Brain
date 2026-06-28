@@ -19,10 +19,12 @@ from typing import Any
 from .const import (
     CONF_ENERGY_TAX,
     CONF_FEED_IN_MARKUP,
+    CONF_MONTHLY_FEE,
     CONF_SUPPLIER_MARKUP,
     CONF_VAT,
     DEFAULT_ENERGY_TAX,
     DEFAULT_FEED_IN_MARKUP,
+    DEFAULT_MONTHLY_FEE,
     DEFAULT_SUPPLIER_MARKUP,
     DEFAULT_VAT,
 )
@@ -44,6 +46,7 @@ class TariffConfig:
     energy_tax: Decimal
     supplier_markup: Decimal
     feed_in_markup: Decimal
+    monthly_fee: Decimal
     vat: Decimal
 
     @classmethod
@@ -57,6 +60,7 @@ class TariffConfig:
             feed_in_markup=_to_decimal(
                 options.get(CONF_FEED_IN_MARKUP), DEFAULT_FEED_IN_MARKUP
             ),
+            monthly_fee=_to_decimal(options.get(CONF_MONTHLY_FEE), DEFAULT_MONTHLY_FEE),
             vat=_to_decimal(options.get(CONF_VAT), DEFAULT_VAT),
         )
 

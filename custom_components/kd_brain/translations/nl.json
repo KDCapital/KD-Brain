@@ -2,14 +2,22 @@
   "config": {
     "step": {
       "user": {
-        "title": "KD Brain",
-        "description": "Stel dynamische energieprijzen in. Je kunt elke waarde later wijzigen via Configureren.",
+        "title": "Kies je energieleverancier",
+        "description": "Kies je leverancier om de tariefwaarden automatisch vooraf in te vullen, of kies \"Anders / handmatig\" om alles zelf in te voeren. Je kunt alle waarden later wijzigen.",
+        "data": {
+          "supplier": "Energieleverancier"
+        }
+      },
+      "tariff": {
+        "title": "Tariefgegevens",
+        "description": "Deze waarden zijn vooraf ingevuld op basis van je leverancier. Pas aan wat afwijkt van je contract. Energiebelasting en BTW zijn landelijke waarden.",
         "data": {
           "price_source": "Prijsbron",
           "price_interval": "Weergaveresolutie",
           "energy_tax": "Energiebelasting (excl. BTW)",
           "supplier_markup": "Leveranciersopslag (excl. BTW)",
           "feed_in_markup": "Terugleverkosten (excl. BTW)",
+          "monthly_fee": "Vaste leveringskosten per maand",
           "vat": "BTW (fractie, bijv. 0,21)",
           "price_low_threshold": "Drempel lage prijs (all-in)",
           "update_interval_minutes": "Update-interval (minuten)"
@@ -24,6 +32,20 @@
     "step": {
       "init": {
         "title": "KD Brain-opties",
+        "menu_options": {
+          "supplier": "Leverancier-preset toepassen",
+          "manual": "Waarden handmatig bewerken"
+        }
+      },
+      "supplier": {
+        "title": "Kies je energieleverancier",
+        "description": "De tariefwaarden worden op het volgende scherm vooraf ingevuld op basis van deze leverancier.",
+        "data": {
+          "supplier": "Energieleverancier"
+        }
+      },
+      "values": {
+        "title": "Tariefgegevens",
         "description": "Stel de prijsbron en tariefcomponenten in waarmee de all-in prijs wordt berekend.",
         "data": {
           "price_source": "Prijsbron",
@@ -31,6 +53,7 @@
           "energy_tax": "Energiebelasting (excl. BTW)",
           "supplier_markup": "Leveranciersopslag (excl. BTW)",
           "feed_in_markup": "Terugleverkosten (excl. BTW)",
+          "monthly_fee": "Vaste leveringskosten per maand",
           "vat": "BTW (fractie, bijv. 0,21)",
           "price_low_threshold": "Drempel lage prijs (all-in)",
           "update_interval_minutes": "Update-interval (minuten)"

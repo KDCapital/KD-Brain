@@ -24,6 +24,7 @@ def _tariff() -> TariffConfig:
         energy_tax=Decimal("0.10"),
         supplier_markup=Decimal("0.02"),
         feed_in_markup=Decimal("0"),
+        monthly_fee=Decimal("6.00"),
         vat=Decimal("0.21"),
     )
 

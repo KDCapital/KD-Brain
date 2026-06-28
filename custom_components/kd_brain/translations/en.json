@@ -2,14 +2,22 @@
   "config": {
     "step": {
       "user": {
-        "title": "KD Brain",
-        "description": "Set up dynamic energy prices. You can change every value later under Configure.",
+        "title": "Choose your energy supplier",
+        "description": "Pick your supplier to pre-fill the tariff values automatically, or choose \"Anders / handmatig\" to enter everything yourself. You can change all values later.",
+        "data": {
+          "supplier": "Energy supplier"
+        }
+      },
+      "tariff": {
+        "title": "Tariff details",
+        "description": "These values were pre-filled based on your supplier. Adjust anything that differs from your contract. Energy tax and VAT are national values.",
         "data": {
           "price_source": "Price source",
           "price_interval": "Display resolution",
           "energy_tax": "Energy tax (excl. VAT)",
           "supplier_markup": "Supplier markup (excl. VAT)",
           "feed_in_markup": "Feed-in cost (excl. VAT)",
+          "monthly_fee": "Monthly standing charge",
           "vat": "VAT (fraction, e.g. 0.21)",
           "price_low_threshold": "Low-price threshold (all-in)",
           "update_interval_minutes": "Update interval (minutes)"
@@ -24,6 +32,20 @@
     "step": {
       "init": {
         "title": "KD Brain options",
+        "menu_options": {
+          "supplier": "Apply a supplier preset",
+          "manual": "Edit values manually"
+        }
+      },
+      "supplier": {
+        "title": "Choose your energy supplier",
+        "description": "The tariff values will be pre-filled from this supplier on the next screen.",
+        "data": {
+          "supplier": "Energy supplier"
+        }
+      },
+      "values": {
+        "title": "Tariff details",
         "description": "Tune the price source and tariff components used to compute all-in prices.",
         "data": {
           "price_source": "Price source",
@@ -31,6 +53,7 @@
           "energy_tax": "Energy tax (excl. VAT)",
           "supplier_markup": "Supplier markup (excl. VAT)",
           "feed_in_markup": "Feed-in cost (excl. VAT)",
+          "monthly_fee": "Monthly standing charge",
           "vat": "VAT (fraction, e.g. 0.21)",
           "price_low_threshold": "Low-price threshold (all-in)",
           "update_interval_minutes": "Update interval (minutes)"

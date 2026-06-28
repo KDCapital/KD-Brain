@@ -11,7 +11,10 @@ All notable changes to KD Brain are documented in this file. The format is based
   diagnostics and repairs.
 - `epexprijzen.nl` price data source (day-ahead, 15-minute MTU resolution, today + tomorrow).
 - Configurable all-in tariff model: market price + energy tax + supplier markup + VAT, plus a
-  separate feed-in price. Nothing hardcoded.
+  separate feed-in price and monthly standing charge. Nothing hardcoded.
+- Supplier presets: pick from 21 Dutch dynamic-energy suppliers to pre-fill the markup, feed-in
+  cost and monthly fee automatically, with a "manual" option for full control. Energy tax and VAT
+  are national values. Dataset curated from publicly listed tariffs (epexprijzen.nl).
 - Price sensors (current, next, daily min/max/average, full-series data sensor) and a
   "price low" binary sensor.
 - `kd_brain.recalculate` service to force a price refresh.
