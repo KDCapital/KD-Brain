@@ -35,7 +35,24 @@
         "menu_options": {
           "supplier": "Apply a supplier preset",
           "manual": "Edit values manually",
-          "devices": "Configure devices (telemetry)"
+          "devices": "Configure devices (telemetry)",
+          "strategy": "Strategies, economics & battery limits"
+        }
+      },
+      "strategy": {
+        "title": "Strategies, economics & battery limits",
+        "description": "Enable strategies and set the economic parameters. Arbitrage only acts when the price spread beats degradation, round-trip losses and the safety margin. KD Brain stays observe-only in this version (recommendations only).",
+        "data": {
+          "enable_self_consumption": "Self-consumption strategy",
+          "enable_dynamic_pricing": "Dynamic pricing strategy",
+          "enable_arbitrage": "Arbitrage strategy",
+          "degradation_cost": "Battery degradation cost",
+          "roundtrip_efficiency": "Round-trip efficiency (0-1)",
+          "safety_margin": "Arbitrage safety margin",
+          "battery_min_soc": "Minimum state of charge",
+          "battery_max_soc": "Maximum state of charge",
+          "max_charge_power_w": "Maximum charge power",
+          "max_discharge_power_w": "Maximum discharge power"
         }
       },
       "devices": {
@@ -101,7 +118,16 @@
       "pv_power": { "name": "Solar power" },
       "load_power": { "name": "Household load" },
       "battery_soc": { "name": "Battery state of charge" },
-      "battery_power": { "name": "Battery power" }
+      "battery_power": { "name": "Battery power" },
+      "recommended_action": {
+        "name": "Recommended action",
+        "state": {
+          "idle": "Idle",
+          "charge": "Charge",
+          "discharge": "Discharge"
+        }
+      },
+      "active_strategy": { "name": "Active strategy" }
     },
     "binary_sensor": {
       "price_low": { "name": "Price is low" }

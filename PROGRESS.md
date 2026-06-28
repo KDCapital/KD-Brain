@@ -6,7 +6,7 @@
 
 **Legenda:** ✅ klaar · 🟡 in uitvoering · ⬜ gepland · 🔒 geblokkeerd/afhankelijk
 
-**Laatst bijgewerkt:** 2026-06-28 · **Huidige release:** M2 (telemetrie, deels) · **Versie:** 0.2.0
+**Laatst bijgewerkt:** 2026-06-28 · **Huidige release:** M3 (engine + strategieën, observe-only) · **Versie:** 0.3.0
 
 ---
 
@@ -16,7 +16,7 @@
 |---|----------|:------:|--------|
 | **M1** | Foundation + prijzen | ✅ | HACS-structuur, config/options flow, coordinator, epexprijzen.nl, prijssensoren, diagnostics, repairs, CI |
 | **M2** | Telemetrie & state | 🟡 | ✅ entity-adapters (HomeWizard P1, Growatt, Marstek) + telemetrie-sensoren + `SystemState`; ⬜ onbalansprijzen |
-| **M3** | Engine + strategieën (dry-run) | ⬜ | OptimizationCoordinator, economics, heuristische optimizer, `Decision`/uitlegbaarheid, eerste strategieën |
+| **M3** | Engine + strategieën (dry-run) | ✅ | OptimizationCoordinator, economics (degradatie/roundtrip/marge), heuristische optimizer, `Decision`/uitlegbaarheid, 3 strategieën, aanbevolen-actie sensor |
 | **M4** | Safety + actuators (echte sturing) | ⬜ | Safety layer, actuators Marstek (Modbus) + Growatt (MQTT), dry-run→active opt-in |
 | **M5** | Uitbreiding | ⬜ | Peak shaving, MILP-arbitrage (highspy), PV/weer-forecast, NL-regelgeving 2026/2027/2029 |
 | **M6** | EV & warmtepomp | ⬜ | Strategieën + safety + actuators voor laden en warmtepomp |
@@ -67,19 +67,19 @@
 | Component | Status | Mijlpaal |
 |-----------|:------:|:--------:|
 | `SystemState` (immutable snapshot) | ✅ | M2 |
-| `OptimizationCoordinator` | ⬜ | M3 |
-| Economisch model (degradatie/roundtrip/marge) | 🟡 basis (tarief) | M1/M3 |
-| Heuristische optimizer + cost functions | ⬜ | M3 |
+| `OptimizationCoordinator` | ✅ | M3 |
+| Economisch model (degradatie/roundtrip/marge) | ✅ | M1/M3 |
+| Heuristische optimizer + cost functions | ✅ | M3 |
 | MILP-solver (highspy, optioneel) | ⬜ | M5 |
-| `Decision`/uitlegbaarheid | ⬜ | M3 |
+| `Decision`/uitlegbaarheid | ✅ | M3 |
 | `Forecaster` (AI-ready interface) | ⬜ | M3/M7 |
 
 ### 3. Strategy Layer (plug-ins, per stuk in/uit)
 | Strategie | Status | Mijlpaal |
 |-----------|:------:|:--------:|
-| Self Consumption | ⬜ | M3 |
-| Dynamic Pricing | ⬜ | M3 |
-| Arbitrage | ⬜ | M3 |
+| Self Consumption | ✅ | M3 |
+| Dynamic Pricing | ✅ | M3 |
+| Arbitrage | ✅ | M3 |
 | Peak Shaving | ⬜ | M5 |
 | Backup Reserve | ⬜ | M5 |
 | Solar Optimization | ⬜ | M5 |

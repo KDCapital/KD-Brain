@@ -32,6 +32,10 @@ beslissing zien **waarom** die genomen is.
 - 🔌 **Telemetrie via bestaande HA-entiteiten** (M2): koppel je slimme meter, zonnepanelen en
   thuisbatterijen in **Opties → Apparaten** en KD Brain leest net-, PV-, verbruik- en batterij-
   vermogen + SOC. Geen dubbele integraties; updates komen direct binnen bij elke wijziging.
+- 🧠 **Uitlegbare optimalisatie-engine** (M3): 3 in/uit-schakelbare strategieën (zelfverbruik,
+  dynamische prijzen, arbitrage met echt economisch model). De sensor **Aanbevolen actie** toont
+  wat KD Brain zou doen én *waarom* — inclusief alle overwogen voorstellen en waarom alternatieven
+  afvielen. **Observe-only**: nog geen aansturing van hardware (dat is M4).
 
 ## Roadmap
 
@@ -39,7 +43,7 @@ beslissing zien **waarom** die genomen is.
 | --- | --- |
 | **M1** ✅ | Foundation + prijzen |
 | **M2** 🟡 | Telemetrie via entity-adapters (HomeWizard P1, Growatt, Marstek) + SystemState (onbalans volgt) |
-| M3 | Optimalisatie-engine + strategieën (dry-run) |
+| **M3** ✅ | Optimalisatie-engine + 3 strategieën + uitlegbare beslissing (observe-only) |
 | M4 | Safety layer + actuators (echte sturing, opt-in) |
 | M5 | Peak shaving, MILP-arbitrage, PV/weer-forecast, NL-regelgeving 2026/2027/2029 |
 | M6 | EV & warmtepomp |

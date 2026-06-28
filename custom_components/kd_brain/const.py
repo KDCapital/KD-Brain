@@ -35,6 +35,18 @@ CONF_BATTERY_SOC_ENTITIES: Final = "battery_soc_entities"
 CONF_BATTERY_POWER_ENTITIES: Final = "battery_power_entities"
 CONF_BATTERY_CAPACITY_WH: Final = "battery_capacity_wh"
 
+# --- Engine: strategies, economics & battery limits (M3) ------------------
+CONF_ENABLE_SELF_CONSUMPTION: Final = "enable_self_consumption"
+CONF_ENABLE_DYNAMIC_PRICING: Final = "enable_dynamic_pricing"
+CONF_ENABLE_ARBITRAGE: Final = "enable_arbitrage"
+CONF_DEGRADATION_COST: Final = "degradation_cost"
+CONF_ROUNDTRIP_EFFICIENCY: Final = "roundtrip_efficiency"
+CONF_SAFETY_MARGIN: Final = "safety_margin"
+CONF_BATTERY_MIN_SOC: Final = "battery_min_soc"
+CONF_BATTERY_MAX_SOC: Final = "battery_max_soc"
+CONF_MAX_CHARGE_POWER_W: Final = "max_charge_power_w"
+CONF_MAX_DISCHARGE_POWER_W: Final = "max_discharge_power_w"
+
 # --- Price source identifiers ---------------------------------------------
 PRICE_SOURCE_EPEXPRIJZEN: Final = "epexprijzen"
 
@@ -56,6 +68,18 @@ DEFAULT_PRICE_LOW_THRESHOLD: Final = Decimal("0.20")  # all-in €/kWh
 DEFAULT_UPDATE_INTERVAL_MINUTES: Final = 30
 DEFAULT_BATTERY_CAPACITY_WH: Final = 5000  # per battery (Marstek 5 kWh)
 
+# Engine defaults (all configurable, nothing hardcoded in the logic).
+DEFAULT_ENABLE_SELF_CONSUMPTION: Final = True
+DEFAULT_ENABLE_DYNAMIC_PRICING: Final = True
+DEFAULT_ENABLE_ARBITRAGE: Final = True
+DEFAULT_DEGRADATION_COST: Final = Decimal("0.05")  # €/kWh throughput
+DEFAULT_ROUNDTRIP_EFFICIENCY: Final = Decimal("0.90")  # fraction 0-1
+DEFAULT_SAFETY_MARGIN: Final = Decimal("0.02")  # €/kWh
+DEFAULT_BATTERY_MIN_SOC: Final = 10.0  # percent
+DEFAULT_BATTERY_MAX_SOC: Final = 95.0  # percent
+DEFAULT_MAX_CHARGE_POWER_W: Final = 2500
+DEFAULT_MAX_DISCHARGE_POWER_W: Final = 2500
+
 MIN_UPDATE_INTERVAL_MINUTES: Final = 5
 MAX_UPDATE_INTERVAL_MINUTES: Final = 360
 
@@ -68,8 +92,13 @@ HOUR_RESOLUTION: Final = timedelta(hours=1)
 CURRENCY_PER_KWH: Final = "€/kWh"
 PRICE_PRECISION: Final = 4  # decimal places for displayed prices
 
+# --- System mode -----------------------------------------------------------
+# KD Brain only observes/recommends until actuators land (M4).
+SYSTEM_MODE_OBSERVE: Final = "observe_only"
+
 # --- Diagnostics / events --------------------------------------------------
 EVENT_PRICES_UPDATED: Final = "kd_brain_prices_updated"
+EVENT_DECISION: Final = "kd_brain_decision"
 
 # --- Repairs issue identifiers --------------------------------------------
 ISSUE_PRICE_SOURCE_UNAVAILABLE: Final = "price_source_unavailable"

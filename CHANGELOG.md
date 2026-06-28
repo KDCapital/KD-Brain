@@ -6,6 +6,24 @@ All notable changes to KD Brain are documented in this file. The format is based
 
 ## [Unreleased]
 
+### Added — M3: Optimisation engine & strategies (observe-only)
+- Explainable decision engine: each round produces a `Decision` recording the chosen action,
+  the winning strategy, every considered proposal with its score, and the reason each
+  alternative was rejected.
+- Three pluggable strategies (individually toggleable): self-consumption (use PV locally),
+  dynamic pricing (charge cheap / discharge expensive) and arbitrage. Arbitrage only acts when
+  the look-ahead spread beats battery degradation, round-trip losses and a safety margin — a real
+  economic model, not an if-statement.
+- Scoring/priority optimiser that enforces battery feasibility (min/max SOC) and ranks proposals.
+- `KDBrainOptimizationCoordinator` that recomputes on every price/telemetry change and fires a
+  `kd_brain_decision` event.
+- New sensors: "Recommended action" (enum, with the full explanation as attributes) and
+  "Active strategy".
+- New options step "Strategies, economics & battery limits" (strategy toggles, degradation cost,
+  round-trip efficiency, safety margin, min/max SOC, max charge/discharge power).
+- KD Brain stays **observe-only**: it recommends, it does not yet control hardware (that is M4).
+- Decision included in diagnostics.
+
 ### Added — M2: Telemetry & state
 - Telemetry layer using the entity-adapter pattern: KD Brain reads existing Home Assistant
   entities (HomeWizard P1, Growatt, Marstek, ...) instead of duplicating those integrations.

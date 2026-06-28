@@ -11,6 +11,7 @@ from pytest_homeassistant_custom_component.common import MockConfigEntry
 from custom_components.kd_brain.const import (
     CONF_BATTERY_CAPACITY_WH,
     CONF_BATTERY_SOC_ENTITIES,
+    CONF_ENABLE_ARBITRAGE,
     CONF_GRID_POWER_ENTITY,
     CONF_SUPPLIER,
     CONF_SUPPLIER_MARKUP,
@@ -164,3 +165,29 @@ async def test_options_flow_devices(
     # Existing tariff/supplier options are preserved.
     assert mock_entry.options[CONF_VAT] == 0.21
     assert mock_entry.options[CONF_SUPPLIER] == MANUAL
+
+
+async def test_options_flow_strategy(
+    hass: HomeAssistant, mock_entry: MockConfigEntry, mock_epex
+) -> None:
+    """The strategy path saves toggles/economics and preserves other options."""
+    mock_entry.add_to_hass(hass)
+    assert await hass.config_entries.async_setup(mock_entry.entry_id)
+    await hass.async_block_till_done()
+
+    result = await hass.config_entries.options.async_init(mock_entry.entry_id)
+    result = await hass.config_entries.options.async_configure(
+        result["flow_id"], {"next_step_id": "strategy"}
+    )
+    assert result["step_id"] == "strategy"
+
+    # Submit the pre-filled defaults but disable arbitrage.
+    user_input = {**result["data_schema"]({}), CONF_ENABLE_ARBITRAGE: False}
+    result = await hass.config_entries.options.async_configure(
+        result["flow_id"], user_input
+    )
+    await hass.async_block_till_done()
+
+    assert result["type"] is FlowResultType.CREATE_ENTRY
+    assert mock_entry.options[CONF_ENABLE_ARBITRAGE] is False
+    assert mock_entry.options[CONF_VAT] == 0.21

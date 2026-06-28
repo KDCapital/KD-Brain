@@ -17,6 +17,7 @@ from homeassistant.config_entries import (
 )
 from homeassistant.core import callback
 from homeassistant.helpers.selector import (
+    BooleanSelector,
     EntitySelector,
     EntitySelectorConfig,
     NumberSelector,
@@ -31,28 +32,48 @@ import voluptuous as vol
 
 from .const import (
     CONF_BATTERY_CAPACITY_WH,
+    CONF_BATTERY_MAX_SOC,
+    CONF_BATTERY_MIN_SOC,
     CONF_BATTERY_POWER_ENTITIES,
     CONF_BATTERY_SOC_ENTITIES,
+    CONF_DEGRADATION_COST,
+    CONF_ENABLE_ARBITRAGE,
+    CONF_ENABLE_DYNAMIC_PRICING,
+    CONF_ENABLE_SELF_CONSUMPTION,
     CONF_ENERGY_TAX,
     CONF_FEED_IN_MARKUP,
     CONF_GRID_POWER_ENTITY,
     CONF_LOAD_POWER_ENTITY,
+    CONF_MAX_CHARGE_POWER_W,
+    CONF_MAX_DISCHARGE_POWER_W,
     CONF_MONTHLY_FEE,
     CONF_PRICE_INTERVAL,
     CONF_PRICE_LOW_THRESHOLD,
     CONF_PRICE_SOURCE,
     CONF_PV_POWER_ENTITY,
+    CONF_ROUNDTRIP_EFFICIENCY,
+    CONF_SAFETY_MARGIN,
     CONF_SUPPLIER,
     CONF_SUPPLIER_MARKUP,
     CONF_UPDATE_INTERVAL_MINUTES,
     CONF_VAT,
     DEFAULT_BATTERY_CAPACITY_WH,
+    DEFAULT_BATTERY_MAX_SOC,
+    DEFAULT_BATTERY_MIN_SOC,
+    DEFAULT_DEGRADATION_COST,
+    DEFAULT_ENABLE_ARBITRAGE,
+    DEFAULT_ENABLE_DYNAMIC_PRICING,
+    DEFAULT_ENABLE_SELF_CONSUMPTION,
     DEFAULT_ENERGY_TAX,
     DEFAULT_FEED_IN_MARKUP,
+    DEFAULT_MAX_CHARGE_POWER_W,
+    DEFAULT_MAX_DISCHARGE_POWER_W,
     DEFAULT_MONTHLY_FEE,
     DEFAULT_PRICE_INTERVAL,
     DEFAULT_PRICE_LOW_THRESHOLD,
     DEFAULT_PRICE_SOURCE,
+    DEFAULT_ROUNDTRIP_EFFICIENCY,
+    DEFAULT_SAFETY_MARGIN,
     DEFAULT_SUPPLIER_MARKUP,
     DEFAULT_UPDATE_INTERVAL_MINUTES,
     DEFAULT_VAT,
@@ -262,6 +283,92 @@ def _devices_schema(values: Mapping[str, Any]) -> vol.Schema:
     )
 
 
+_STRATEGY_DEFAULTS: dict[str, Any] = {
+    CONF_ENABLE_SELF_CONSUMPTION: DEFAULT_ENABLE_SELF_CONSUMPTION,
+    CONF_ENABLE_DYNAMIC_PRICING: DEFAULT_ENABLE_DYNAMIC_PRICING,
+    CONF_ENABLE_ARBITRAGE: DEFAULT_ENABLE_ARBITRAGE,
+    CONF_DEGRADATION_COST: float(DEFAULT_DEGRADATION_COST),
+    CONF_ROUNDTRIP_EFFICIENCY: float(DEFAULT_ROUNDTRIP_EFFICIENCY),
+    CONF_SAFETY_MARGIN: float(DEFAULT_SAFETY_MARGIN),
+    CONF_BATTERY_MIN_SOC: DEFAULT_BATTERY_MIN_SOC,
+    CONF_BATTERY_MAX_SOC: DEFAULT_BATTERY_MAX_SOC,
+    CONF_MAX_CHARGE_POWER_W: DEFAULT_MAX_CHARGE_POWER_W,
+    CONF_MAX_DISCHARGE_POWER_W: DEFAULT_MAX_DISCHARGE_POWER_W,
+}
+
+
+def _percent() -> NumberSelector:
+    """Return a 0-100% number selector."""
+    return NumberSelector(
+        NumberSelectorConfig(
+            min=0, max=100, step=1, mode=NumberSelectorMode.BOX, unit_of_measurement="%"
+        )
+    )
+
+
+def _power_w() -> NumberSelector:
+    """Return a watt number selector for power limits."""
+    return NumberSelector(
+        NumberSelectorConfig(
+            min=0,
+            max=20000,
+            step=100,
+            mode=NumberSelectorMode.BOX,
+            unit_of_measurement="W",
+        )
+    )
+
+
+def _strategy_schema(values: Mapping[str, Any]) -> vol.Schema:
+    """Build the strategy/economics/battery-limits schema."""
+
+    def default(key: str) -> Any:
+        return values.get(key, _STRATEGY_DEFAULTS[key])
+
+    return vol.Schema(
+        {
+            vol.Required(
+                CONF_ENABLE_SELF_CONSUMPTION,
+                default=default(CONF_ENABLE_SELF_CONSUMPTION),
+            ): BooleanSelector(),
+            vol.Required(
+                CONF_ENABLE_DYNAMIC_PRICING,
+                default=default(CONF_ENABLE_DYNAMIC_PRICING),
+            ): BooleanSelector(),
+            vol.Required(
+                CONF_ENABLE_ARBITRAGE, default=default(CONF_ENABLE_ARBITRAGE)
+            ): BooleanSelector(),
+            vol.Required(
+                CONF_DEGRADATION_COST, default=default(CONF_DEGRADATION_COST)
+            ): _price_per_kwh(),
+            vol.Required(
+                CONF_ROUNDTRIP_EFFICIENCY,
+                default=default(CONF_ROUNDTRIP_EFFICIENCY),
+            ): NumberSelector(
+                NumberSelectorConfig(
+                    min=0.1, max=1, step=0.01, mode=NumberSelectorMode.BOX
+                )
+            ),
+            vol.Required(
+                CONF_SAFETY_MARGIN, default=default(CONF_SAFETY_MARGIN)
+            ): _price_per_kwh(),
+            vol.Required(
+                CONF_BATTERY_MIN_SOC, default=default(CONF_BATTERY_MIN_SOC)
+            ): _percent(),
+            vol.Required(
+                CONF_BATTERY_MAX_SOC, default=default(CONF_BATTERY_MAX_SOC)
+            ): _percent(),
+            vol.Required(
+                CONF_MAX_CHARGE_POWER_W, default=default(CONF_MAX_CHARGE_POWER_W)
+            ): _power_w(),
+            vol.Required(
+                CONF_MAX_DISCHARGE_POWER_W,
+                default=default(CONF_MAX_DISCHARGE_POWER_W),
+            ): _power_w(),
+        }
+    )
+
+
 class KDBrainConfigFlow(ConfigFlow, domain=DOMAIN):
     """Handle the initial setup of KD Brain."""
 
@@ -312,9 +419,10 @@ class KDBrainOptionsFlow(OptionsFlow):
     async def async_step_init(
         self, user_input: dict[str, Any] | None = None
     ) -> ConfigFlowResult:
-        """Offer a supplier preset, manual tariff editing, or device setup."""
+        """Offer supplier preset, manual tariff editing, devices, or strategies."""
         return self.async_show_menu(
-            step_id="init", menu_options=["supplier", "manual", "devices"]
+            step_id="init",
+            menu_options=["supplier", "manual", "devices", "strategy"],
         )
 
     async def async_step_supplier(
@@ -374,4 +482,16 @@ class KDBrainOptionsFlow(OptionsFlow):
         return self.async_show_form(
             step_id="devices",
             data_schema=_devices_schema(self.config_entry.options),
+        )
+
+    async def async_step_strategy(
+        self, user_input: dict[str, Any] | None = None
+    ) -> ConfigFlowResult:
+        """Configure strategies, economics and battery limits."""
+        if user_input is not None:
+            saved = {**self.config_entry.options, **user_input}
+            return self.async_create_entry(title="", data=saved)
+        return self.async_show_form(
+            step_id="strategy",
+            data_schema=_strategy_schema(self.config_entry.options),
         )

@@ -35,7 +35,24 @@
         "menu_options": {
           "supplier": "Leverancier-preset toepassen",
           "manual": "Waarden handmatig bewerken",
-          "devices": "Apparaten instellen (telemetrie)"
+          "devices": "Apparaten instellen (telemetrie)",
+          "strategy": "Strategieën, economie & batterijgrenzen"
+        }
+      },
+      "strategy": {
+        "title": "Strategieën, economie & batterijgrenzen",
+        "description": "Schakel strategieën in en stel de economische parameters in. Arbitrage handelt alleen als het prijsverschil groter is dan degradatie, roundtrip-verliezen en de veiligheidsmarge. KD Brain blijft in deze versie observe-only (alleen aanbevelingen).",
+        "data": {
+          "enable_self_consumption": "Zelfverbruik-strategie",
+          "enable_dynamic_pricing": "Dynamische prijzen-strategie",
+          "enable_arbitrage": "Arbitrage-strategie",
+          "degradation_cost": "Batterijdegradatiekosten",
+          "roundtrip_efficiency": "Roundtrip-rendement (0-1)",
+          "safety_margin": "Arbitrage-veiligheidsmarge",
+          "battery_min_soc": "Minimale laadtoestand",
+          "battery_max_soc": "Maximale laadtoestand",
+          "max_charge_power_w": "Maximaal laadvermogen",
+          "max_discharge_power_w": "Maximaal ontlaadvermogen"
         }
       },
       "devices": {
@@ -101,7 +118,16 @@
       "pv_power": { "name": "Zonnevermogen" },
       "load_power": { "name": "Huishoudelijk verbruik" },
       "battery_soc": { "name": "Batterij-laadtoestand" },
-      "battery_power": { "name": "Batterijvermogen" }
+      "battery_power": { "name": "Batterijvermogen" },
+      "recommended_action": {
+        "name": "Aanbevolen actie",
+        "state": {
+          "idle": "Inactief",
+          "charge": "Opladen",
+          "discharge": "Ontladen"
+        }
+      },
+      "active_strategy": { "name": "Actieve strategie" }
     },
     "binary_sensor": {
       "price_low": { "name": "Prijs is laag" }

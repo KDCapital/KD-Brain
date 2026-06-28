@@ -45,6 +45,8 @@ async def async_get_config_entry_diagnostics(
         "snapshot": telemetry.as_dict() if telemetry is not None else None,
     }
 
+    decision = entry.runtime_data.optimization_coordinator.data
+
     return {
         "entry": {
             "options": async_redact_data(dict(entry.options), TO_REDACT),
@@ -61,4 +63,5 @@ async def async_get_config_entry_diagnostics(
         },
         "prices": sample,
         "telemetry": telemetry_diag,
+        "decision": decision.as_dict() if decision is not None else None,
     }

@@ -17,7 +17,11 @@ from homeassistant.config_entries import ConfigEntry
 from homeassistant.core import HomeAssistant
 
 from .const import PLATFORMS
-from .coordinator import KDBrainPriceCoordinator, KDBrainTelemetryCoordinator
+from .coordinator import (
+    KDBrainOptimizationCoordinator,
+    KDBrainPriceCoordinator,
+    KDBrainTelemetryCoordinator,
+)
 from .services import async_setup_services, async_unload_services
 
 type KDBrainConfigEntry = ConfigEntry[KDBrainRuntimeData]
@@ -27,13 +31,14 @@ type KDBrainConfigEntry = ConfigEntry[KDBrainRuntimeData]
 class KDBrainRuntimeData:
     """Runtime data stored on the config entry.
 
-    Acts as the composition root for KD Brain's layers. It currently holds the
-    price and telemetry coordinators; subsequent milestones extend it (energy
-    engine, strategy registry, safety registry, actuator registry).
+    Acts as the composition root for KD Brain's layers. It holds the price and
+    telemetry coordinators and the optimisation coordinator (engine); later
+    milestones add the safety and actuator registries.
     """
 
     price_coordinator: KDBrainPriceCoordinator
     telemetry_coordinator: KDBrainTelemetryCoordinator
+    optimization_coordinator: KDBrainOptimizationCoordinator
 
 
 async def async_setup_entry(hass: HomeAssistant, entry: KDBrainConfigEntry) -> bool:
@@ -45,9 +50,17 @@ async def async_setup_entry(hass: HomeAssistant, entry: KDBrainConfigEntry) -> b
     await telemetry_coordinator.async_config_entry_first_refresh()
     entry.async_on_unload(telemetry_coordinator.async_setup_listeners())
 
+    optimization_coordinator = KDBrainOptimizationCoordinator(
+        hass, entry, price_coordinator, telemetry_coordinator
+    )
+    await optimization_coordinator.async_refresh()
+    for unsub in optimization_coordinator.async_setup_listeners():
+        entry.async_on_unload(unsub)
+
     entry.runtime_data = KDBrainRuntimeData(
         price_coordinator=price_coordinator,
         telemetry_coordinator=telemetry_coordinator,
+        optimization_coordinator=optimization_coordinator,
     )
 
     await hass.config_entries.async_forward_entry_setups(entry, PLATFORMS)

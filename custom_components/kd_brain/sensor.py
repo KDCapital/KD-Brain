@@ -33,9 +33,18 @@ from .const import (
     INTERVAL_HOURLY,
     PRICE_PRECISION,
 )
-from .coordinator import KDBrainPriceCoordinator, KDBrainTelemetryCoordinator
+from .coordinator import (
+    KDBrainOptimizationCoordinator,
+    KDBrainPriceCoordinator,
+    KDBrainTelemetryCoordinator,
+)
 from .data.models import PriceSeries, Telemetry
-from .entity import KDBrainPriceEntity, KDBrainTelemetryEntity
+from .engine.decision import BatteryAction
+from .entity import (
+    KDBrainOptimizationEntity,
+    KDBrainPriceEntity,
+    KDBrainTelemetryEntity,
+)
 
 
 def _display_series(coordinator: KDBrainPriceCoordinator) -> PriceSeries:
@@ -206,6 +215,10 @@ async def async_setup_entry(
         if any(options.get(key) for key in description.required_keys)
     )
 
+    optimization = runtime.optimization_coordinator
+    entities.append(KDBrainRecommendedActionSensor(optimization))
+    entities.append(KDBrainActiveStrategySensor(optimization))
+
     async_add_entities(entities)
 
 
@@ -317,3 +330,49 @@ class KDBrainTelemetrySensor(KDBrainTelemetryEntity, SensorEntity):
     def native_value(self) -> StateType:
         """Return the telemetry value."""
         return self.entity_description.value_fn(self.coordinator.data)
+
+
+class KDBrainRecommendedActionSensor(KDBrainOptimizationEntity, SensorEntity):
+    """The engine's current recommended battery action, with full explanation."""
+
+    _attr_translation_key = "recommended_action"
+    _attr_device_class = SensorDeviceClass.ENUM
+
+    def __init__(self, coordinator: KDBrainOptimizationCoordinator) -> None:
+        """Initialise the sensor."""
+        super().__init__(coordinator, "recommended_action")
+        self._attr_options = [action.value for action in BatteryAction]
+
+    @property
+    def native_value(self) -> StateType:
+        """Return the recommended action."""
+        decision = self.coordinator.data
+        return None if decision is None else decision.chosen.action.value
+
+    @property
+    def extra_state_attributes(self) -> dict[str, Any] | None:
+        """Return the full, explainable decision."""
+        decision = self.coordinator.data
+        return None if decision is None else decision.as_dict()
+
+
+class KDBrainActiveStrategySensor(KDBrainOptimizationEntity, SensorEntity):
+    """The strategy that produced the current recommendation."""
+
+    _attr_translation_key = "active_strategy"
+
+    def __init__(self, coordinator: KDBrainOptimizationCoordinator) -> None:
+        """Initialise the sensor."""
+        super().__init__(coordinator, "active_strategy")
+
+    @property
+    def native_value(self) -> StateType:
+        """Return the winning strategy name."""
+        decision = self.coordinator.data
+        return None if decision is None else decision.strategy
+
+    @property
+    def extra_state_attributes(self) -> dict[str, Any] | None:
+        """Expose the rationale for the active strategy."""
+        decision = self.coordinator.data
+        return None if decision is None else {"why": decision.why}

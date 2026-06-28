@@ -25,6 +25,7 @@ from .const import (
     DEFAULT_PRICE_SOURCE,
     DEFAULT_UPDATE_INTERVAL_MINUTES,
     DOMAIN,
+    EVENT_DECISION,
     EVENT_PRICES_UPDATED,
     ISSUE_PRICE_SOURCE_UNAVAILABLE,
     MAX_UPDATE_INTERVAL_MINUTES,
@@ -36,6 +37,10 @@ from .data.models import PriceSeries, Telemetry
 from .data.sources.base import PriceSource, PriceSourceError
 from .data.sources.epexprijzen import EpexPrijzenSource
 from .economics import TariffConfig
+from .engine.config import OptimizerConfig
+from .engine.decision import Decision
+from .engine.optimizer import optimize
+from .engine.state import build_system_state
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -149,3 +154,64 @@ class KDBrainTelemetryCoordinator(DataUpdateCoordinator[Telemetry]):
     def _handle_source_change(self, event: Event[EventStateChangedData]) -> None:
         """Rebuild telemetry when a tracked entity changes."""
         self.async_set_updated_data(self._adapter.read(self.hass))
+
+
+class KDBrainOptimizationCoordinator(DataUpdateCoordinator[Decision | None]):
+    """Runs the optimisation engine whenever prices or telemetry change.
+
+    The coordinator does not poll. It listens to the price and telemetry
+    coordinators and recomputes a fresh :class:`Decision` (debounced by the
+    built-in request-refresh debouncer). KD Brain stays in observe-only mode in
+    M3: the decision is a recommendation, nothing is actuated.
+    """
+
+    def __init__(
+        self,
+        hass: HomeAssistant,
+        entry: ConfigEntry,
+        price_coordinator: KDBrainPriceCoordinator,
+        telemetry_coordinator: KDBrainTelemetryCoordinator,
+    ) -> None:
+        """Initialise the coordinator from the upstream coordinators."""
+        super().__init__(
+            hass,
+            _LOGGER,
+            name=f"{DOMAIN}_optimization",
+            update_interval=None,
+            config_entry=entry,
+        )
+        self._price = price_coordinator
+        self._telemetry = telemetry_coordinator
+
+    @property
+    def optimizer_config(self) -> OptimizerConfig:
+        """Return the engine config built from the current entry options."""
+        assert self.config_entry is not None
+        return OptimizerConfig.from_options(dict(self.config_entry.options))
+
+    async def _async_update_data(self) -> Decision | None:
+        """Build a system state and run the optimiser."""
+        prices = self._price.data
+        if prices is None or prices.is_empty:
+            return None
+        telemetry = self._telemetry.data or Telemetry()
+        state = build_system_state(dt_util.utcnow(), prices, telemetry)
+        decision = optimize(state, self.optimizer_config)
+        self.hass.bus.async_fire(
+            EVENT_DECISION,
+            {"action": decision.chosen.action.value, "strategy": decision.strategy},
+        )
+        return decision
+
+    @callback
+    def async_setup_listeners(self) -> list[CALLBACK_TYPE]:
+        """Recompute whenever prices or telemetry update."""
+        return [
+            self._price.async_add_listener(self._handle_upstream),
+            self._telemetry.async_add_listener(self._handle_upstream),
+        ]
+
+    @callback
+    def _handle_upstream(self) -> None:
+        """Schedule a debounced recompute on an upstream update."""
+        self.hass.async_create_task(self.async_request_refresh())
