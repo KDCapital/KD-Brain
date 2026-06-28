@@ -1,0 +1,117 @@
+"""Read telemetry from configured Home Assistant entities.
+
+KD Brain is an orchestration layer: instead of duplicating device integrations
+it reads the entities those integrations already provide (HomeWizard P1,
+Growatt, Marstek, ...). The :class:`EntityAdapter` maps configured entity ids
+onto an immutable :class:`Telemetry` snapshot.
+"""
+
+from __future__ import annotations
+
+from collections.abc import Mapping
+from typing import Any
+
+from homeassistant.const import (
+    ATTR_UNIT_OF_MEASUREMENT,
+    STATE_UNAVAILABLE,
+    STATE_UNKNOWN,
+)
+from homeassistant.core import HomeAssistant
+
+from ...const import (
+    CONF_BATTERY_CAPACITY_WH,
+    CONF_BATTERY_POWER_ENTITIES,
+    CONF_BATTERY_SOC_ENTITIES,
+    CONF_GRID_POWER_ENTITY,
+    CONF_LOAD_POWER_ENTITY,
+    CONF_PV_POWER_ENTITY,
+    DEFAULT_BATTERY_CAPACITY_WH,
+)
+from ..models import BatteryState, GridState, LoadState, PvState, Telemetry
+
+_POWER_TO_WATT: dict[str, float] = {"w": 1.0, "kw": 1000.0, "mw": 1_000_000.0}
+
+
+def _as_list(value: Any) -> list[str]:
+    """Coerce an option value into a list of entity ids."""
+    if not value:
+        return []
+    if isinstance(value, str):
+        return [value]
+    return list(value)
+
+
+class EntityAdapter:
+    """Builds telemetry snapshots from configured source entities."""
+
+    def __init__(self, options: Mapping[str, Any]) -> None:
+        """Initialise the adapter from config entry options."""
+        self._grid = options.get(CONF_GRID_POWER_ENTITY)
+        self._pv = options.get(CONF_PV_POWER_ENTITY)
+        self._load = options.get(CONF_LOAD_POWER_ENTITY)
+        self._soc = _as_list(options.get(CONF_BATTERY_SOC_ENTITIES))
+        self._power = _as_list(options.get(CONF_BATTERY_POWER_ENTITIES))
+        self._capacity = int(
+            options.get(CONF_BATTERY_CAPACITY_WH) or DEFAULT_BATTERY_CAPACITY_WH
+        )
+
+    @property
+    def entity_ids(self) -> list[str]:
+        """Return every source entity id, for state-change tracking."""
+        ids = [self._grid, self._pv, self._load, *self._soc, *self._power]
+        return [entity_id for entity_id in ids if entity_id]
+
+    @property
+    def is_configured(self) -> bool:
+        """Return whether any telemetry source is configured."""
+        return bool(self.entity_ids)
+
+    def read(self, hass: HomeAssistant) -> Telemetry:
+        """Read current states and build an immutable telemetry snapshot."""
+        return Telemetry(
+            grid=GridState(power_w=self._power_w(hass, self._grid)),
+            pv=PvState(power_w=self._power_w(hass, self._pv)),
+            batteries=self._batteries(hass),
+            load=LoadState(power_w=self._power_w(hass, self._load)),
+        )
+
+    def _batteries(self, hass: HomeAssistant) -> tuple[BatteryState, ...]:
+        """Build one battery state per configured SOC/power entity."""
+        count = max(len(self._soc), len(self._power))
+        batteries: list[BatteryState] = []
+        for index in range(count):
+            soc_id = self._soc[index] if index < len(self._soc) else None
+            power_id = self._power[index] if index < len(self._power) else None
+            batteries.append(
+                BatteryState(
+                    soc=self._numeric(hass, soc_id),
+                    power_w=self._power_w(hass, power_id),
+                    capacity_wh=self._capacity,
+                )
+            )
+        return tuple(batteries)
+
+    @staticmethod
+    def _numeric(hass: HomeAssistant, entity_id: str | None) -> float | None:
+        """Return the numeric state of an entity, or None if unusable."""
+        if not entity_id:
+            return None
+        state = hass.states.get(entity_id)
+        if state is None or state.state in (STATE_UNAVAILABLE, STATE_UNKNOWN, ""):
+            return None
+        try:
+            return float(state.state)
+        except (ValueError, TypeError):
+            return None
+
+    @classmethod
+    def _power_w(cls, hass: HomeAssistant, entity_id: str | None) -> float | None:
+        """Return an entity's power in watts, converting kW/MW if needed."""
+        value = cls._numeric(hass, entity_id)
+        if value is None or not entity_id:
+            return None
+        state = hass.states.get(entity_id)
+        unit = ""
+        if state is not None:
+            unit = str(state.attributes.get(ATTR_UNIT_OF_MEASUREMENT, "")).lower()
+        return value * _POWER_TO_WATT.get(unit, 1.0)

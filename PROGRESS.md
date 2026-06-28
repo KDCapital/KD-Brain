@@ -6,7 +6,7 @@
 
 **Legenda:** ✅ klaar · 🟡 in uitvoering · ⬜ gepland · 🔒 geblokkeerd/afhankelijk
 
-**Laatst bijgewerkt:** 2026-06-28 · **Huidige release:** M1 (Foundation + prijzen) · **Versie:** 0.1.0
+**Laatst bijgewerkt:** 2026-06-28 · **Huidige release:** M2 (telemetrie, deels) · **Versie:** 0.2.0
 
 ---
 
@@ -15,7 +15,7 @@
 | # | Mijlpaal | Status | Inhoud |
 |---|----------|:------:|--------|
 | **M1** | Foundation + prijzen | ✅ | HACS-structuur, config/options flow, coordinator, epexprijzen.nl, prijssensoren, diagnostics, repairs, CI |
-| **M2** | Telemetrie & state | ⬜ | Entity-adapters (HomeWizard P1, Growatt, Marstek), `SystemState`, onbalansprijzen |
+| **M2** | Telemetrie & state | 🟡 | ✅ entity-adapters (HomeWizard P1, Growatt, Marstek) + telemetrie-sensoren + `SystemState`; ⬜ onbalansprijzen |
 | **M3** | Engine + strategieën (dry-run) | ⬜ | OptimizationCoordinator, economics, heuristische optimizer, `Decision`/uitlegbaarheid, eerste strategieën |
 | **M4** | Safety + actuators (echte sturing) | ⬜ | Safety layer, actuators Marstek (Modbus) + Growatt (MQTT), dry-run→active opt-in |
 | **M5** | Uitbreiding | ⬜ | Peak shaving, MILP-arbitrage (highspy), PV/weer-forecast, NL-regelgeving 2026/2027/2029 |
@@ -58,15 +58,15 @@
 | Leverancier-presets (21 NL) | tariefdata | ✅ | M1 |
 | Onbalansprijzen | prijzen | ⬜ | M2 |
 | ENTSO-E (fallback) | prijzen | ⬜ | M5 |
-| HomeWizard P1 | telemetrie (entity-adapter) | ⬜ | M2 |
-| Growatt | telemetrie + sturing (MQTT) | ⬜ | M2/M4 |
-| Marstek 5kWh ×2 | telemetrie + sturing (Modbus) | ⬜ | M2/M4 |
+| HomeWizard P1 | telemetrie (entity-adapter) | ✅ | M2 |
+| Growatt | telemetrie (entity-adapter) ✅ / sturing (MQTT) ⬜ | 🟡 | M2/M4 |
+| Marstek 5kWh ×2 | telemetrie (entity-adapter) ✅ / sturing (Modbus) ⬜ | 🟡 | M2/M4 |
 | PV-/weersvoorspelling | forecast | ⬜ | M5 |
 
 ### 2. Core / Energy Engine
 | Component | Status | Mijlpaal |
 |-----------|:------:|:--------:|
-| `SystemState` (immutable snapshot) | ⬜ | M2 |
+| `SystemState` (immutable snapshot) | ✅ | M2 |
 | `OptimizationCoordinator` | ⬜ | M3 |
 | Economisch model (degradatie/roundtrip/marge) | 🟡 basis (tarief) | M1/M3 |
 | Heuristische optimizer + cost functions | ⬜ | M3 |

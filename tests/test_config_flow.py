@@ -9,6 +9,9 @@ import pytest
 from pytest_homeassistant_custom_component.common import MockConfigEntry
 
 from custom_components.kd_brain.const import (
+    CONF_BATTERY_CAPACITY_WH,
+    CONF_BATTERY_SOC_ENTITIES,
+    CONF_GRID_POWER_ENTITY,
     CONF_SUPPLIER,
     CONF_SUPPLIER_MARKUP,
     CONF_VAT,
@@ -129,3 +132,35 @@ async def test_options_flow_supplier_preset(
     )
     await hass.async_block_till_done()
     assert mock_entry.options[CONF_SUPPLIER] == "frank-energie"
+
+
+async def test_options_flow_devices(
+    hass: HomeAssistant, mock_entry: MockConfigEntry, mock_epex
+) -> None:
+    """The devices path maps entities and preserves existing tariff options."""
+    mock_entry.add_to_hass(hass)
+    assert await hass.config_entries.async_setup(mock_entry.entry_id)
+    await hass.async_block_till_done()
+
+    result = await hass.config_entries.options.async_init(mock_entry.entry_id)
+    result = await hass.config_entries.options.async_configure(
+        result["flow_id"], {"next_step_id": "devices"}
+    )
+    assert result["step_id"] == "devices"
+
+    result = await hass.config_entries.options.async_configure(
+        result["flow_id"],
+        {
+            CONF_GRID_POWER_ENTITY: "sensor.p1_power",
+            CONF_BATTERY_SOC_ENTITIES: ["sensor.battery_soc"],
+            CONF_BATTERY_CAPACITY_WH: 5000,
+        },
+    )
+    await hass.async_block_till_done()
+
+    assert result["type"] is FlowResultType.CREATE_ENTRY
+    assert mock_entry.options[CONF_GRID_POWER_ENTITY] == "sensor.p1_power"
+    assert mock_entry.options[CONF_BATTERY_SOC_ENTITIES] == ["sensor.battery_soc"]
+    # Existing tariff/supplier options are preserved.
+    assert mock_entry.options[CONF_VAT] == 0.21
+    assert mock_entry.options[CONF_SUPPLIER] == MANUAL

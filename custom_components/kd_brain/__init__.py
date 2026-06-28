@@ -17,7 +17,7 @@ from homeassistant.config_entries import ConfigEntry
 from homeassistant.core import HomeAssistant
 
 from .const import PLATFORMS
-from .coordinator import KDBrainPriceCoordinator
+from .coordinator import KDBrainPriceCoordinator, KDBrainTelemetryCoordinator
 from .services import async_setup_services, async_unload_services
 
 type KDBrainConfigEntry = ConfigEntry[KDBrainRuntimeData]
@@ -27,12 +27,13 @@ type KDBrainConfigEntry = ConfigEntry[KDBrainRuntimeData]
 class KDBrainRuntimeData:
     """Runtime data stored on the config entry.
 
-    Acts as the composition root for KD Brain's layers. In M1 it only holds the
-    price coordinator; subsequent milestones extend it (telemetry coordinator,
-    energy engine, strategy registry, safety registry, actuator registry).
+    Acts as the composition root for KD Brain's layers. It currently holds the
+    price and telemetry coordinators; subsequent milestones extend it (energy
+    engine, strategy registry, safety registry, actuator registry).
     """
 
     price_coordinator: KDBrainPriceCoordinator
+    telemetry_coordinator: KDBrainTelemetryCoordinator
 
 
 async def async_setup_entry(hass: HomeAssistant, entry: KDBrainConfigEntry) -> bool:
@@ -40,7 +41,14 @@ async def async_setup_entry(hass: HomeAssistant, entry: KDBrainConfigEntry) -> b
     price_coordinator = KDBrainPriceCoordinator(hass, entry)
     await price_coordinator.async_config_entry_first_refresh()
 
-    entry.runtime_data = KDBrainRuntimeData(price_coordinator=price_coordinator)
+    telemetry_coordinator = KDBrainTelemetryCoordinator(hass, entry)
+    await telemetry_coordinator.async_config_entry_first_refresh()
+    entry.async_on_unload(telemetry_coordinator.async_setup_listeners())
+
+    entry.runtime_data = KDBrainRuntimeData(
+        price_coordinator=price_coordinator,
+        telemetry_coordinator=telemetry_coordinator,
+    )
 
     await hass.config_entries.async_forward_entry_setups(entry, PLATFORMS)
     entry.async_on_unload(entry.add_update_listener(_async_update_listener))

@@ -9,10 +9,12 @@ from decimal import Decimal
 from typing import Any
 
 from homeassistant.components.sensor import (
+    SensorDeviceClass,
     SensorEntity,
     SensorEntityDescription,
     SensorStateClass,
 )
+from homeassistant.const import PERCENTAGE, UnitOfPower
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
 from homeassistant.helpers.typing import StateType
@@ -20,15 +22,20 @@ from homeassistant.util import dt as dt_util
 
 from . import KDBrainConfigEntry
 from .const import (
+    CONF_BATTERY_POWER_ENTITIES,
+    CONF_BATTERY_SOC_ENTITIES,
+    CONF_GRID_POWER_ENTITY,
+    CONF_LOAD_POWER_ENTITY,
     CONF_PRICE_INTERVAL,
+    CONF_PV_POWER_ENTITY,
     CURRENCY_PER_KWH,
     DEFAULT_PRICE_INTERVAL,
     INTERVAL_HOURLY,
     PRICE_PRECISION,
 )
-from .coordinator import KDBrainPriceCoordinator
-from .data.models import PriceSeries
-from .entity import KDBrainPriceEntity
+from .coordinator import KDBrainPriceCoordinator, KDBrainTelemetryCoordinator
+from .data.models import PriceSeries, Telemetry
+from .entity import KDBrainPriceEntity, KDBrainTelemetryEntity
 
 
 def _display_series(coordinator: KDBrainPriceCoordinator) -> PriceSeries:
@@ -184,11 +191,22 @@ async def async_setup_entry(
     entry: KDBrainConfigEntry,
     async_add_entities: AddEntitiesCallback,
 ) -> None:
-    """Set up KD Brain price sensors."""
-    coordinator = entry.runtime_data.price_coordinator
-    async_add_entities(
-        KDBrainPriceSensor(coordinator, description) for description in SENSORS
+    """Set up KD Brain price and telemetry sensors."""
+    runtime = entry.runtime_data
+    entities: list[SensorEntity] = [
+        KDBrainPriceSensor(runtime.price_coordinator, description)
+        for description in SENSORS
+    ]
+
+    options = dict(entry.options)
+    telemetry = runtime.telemetry_coordinator
+    entities.extend(
+        KDBrainTelemetrySensor(telemetry, description)
+        for description in TELEMETRY_SENSORS
+        if any(options.get(key) for key in description.required_keys)
     )
+
+    async_add_entities(entities)
 
 
 class KDBrainPriceSensor(KDBrainPriceEntity, SensorEntity):
@@ -216,3 +234,86 @@ class KDBrainPriceSensor(KDBrainPriceEntity, SensorEntity):
         if self.entity_description.attr_fn is None:
             return None
         return self.entity_description.attr_fn(self.coordinator)
+
+
+def _round1(value: float | None) -> float | None:
+    """Round a telemetry value to one decimal, preserving ``None``."""
+    return None if value is None else round(value, 1)
+
+
+@dataclass(frozen=True, kw_only=True)
+class KDBrainTelemetrySensorDescription(SensorEntityDescription):
+    """Describes a KD Brain telemetry sensor."""
+
+    value_fn: Callable[[Telemetry], StateType]
+    # The sensor is created only when at least one of these options is set.
+    required_keys: tuple[str, ...]
+
+
+TELEMETRY_SENSORS: tuple[KDBrainTelemetrySensorDescription, ...] = (
+    KDBrainTelemetrySensorDescription(
+        key="grid_power",
+        translation_key="grid_power",
+        device_class=SensorDeviceClass.POWER,
+        native_unit_of_measurement=UnitOfPower.WATT,
+        state_class=SensorStateClass.MEASUREMENT,
+        value_fn=lambda t: _round1(t.grid.power_w),
+        required_keys=(CONF_GRID_POWER_ENTITY,),
+    ),
+    KDBrainTelemetrySensorDescription(
+        key="pv_power",
+        translation_key="pv_power",
+        device_class=SensorDeviceClass.POWER,
+        native_unit_of_measurement=UnitOfPower.WATT,
+        state_class=SensorStateClass.MEASUREMENT,
+        value_fn=lambda t: _round1(t.pv.power_w),
+        required_keys=(CONF_PV_POWER_ENTITY,),
+    ),
+    KDBrainTelemetrySensorDescription(
+        key="load_power",
+        translation_key="load_power",
+        device_class=SensorDeviceClass.POWER,
+        native_unit_of_measurement=UnitOfPower.WATT,
+        state_class=SensorStateClass.MEASUREMENT,
+        value_fn=lambda t: _round1(t.effective_load_w()[0]),
+        required_keys=(CONF_LOAD_POWER_ENTITY, CONF_GRID_POWER_ENTITY),
+    ),
+    KDBrainTelemetrySensorDescription(
+        key="battery_soc",
+        translation_key="battery_soc",
+        device_class=SensorDeviceClass.BATTERY,
+        native_unit_of_measurement=PERCENTAGE,
+        state_class=SensorStateClass.MEASUREMENT,
+        value_fn=lambda t: _round1(t.battery_soc_average()),
+        required_keys=(CONF_BATTERY_SOC_ENTITIES,),
+    ),
+    KDBrainTelemetrySensorDescription(
+        key="battery_power",
+        translation_key="battery_power",
+        device_class=SensorDeviceClass.POWER,
+        native_unit_of_measurement=UnitOfPower.WATT,
+        state_class=SensorStateClass.MEASUREMENT,
+        value_fn=lambda t: _round1(t.battery_power_total()),
+        required_keys=(CONF_BATTERY_SOC_ENTITIES, CONF_BATTERY_POWER_ENTITIES),
+    ),
+)
+
+
+class KDBrainTelemetrySensor(KDBrainTelemetryEntity, SensorEntity):
+    """A telemetry sensor backed by the telemetry coordinator."""
+
+    entity_description: KDBrainTelemetrySensorDescription
+
+    def __init__(
+        self,
+        coordinator: KDBrainTelemetryCoordinator,
+        description: KDBrainTelemetrySensorDescription,
+    ) -> None:
+        """Initialise the sensor."""
+        super().__init__(coordinator, description.key)
+        self.entity_description = description
+
+    @property
+    def native_value(self) -> StateType:
+        """Return the telemetry value."""
+        return self.entity_description.value_fn(self.coordinator.data)

@@ -34,7 +34,20 @@
         "title": "KD Brain options",
         "menu_options": {
           "supplier": "Apply a supplier preset",
-          "manual": "Edit values manually"
+          "manual": "Edit values manually",
+          "devices": "Configure devices (telemetry)"
+        }
+      },
+      "devices": {
+        "title": "Devices & telemetry",
+        "description": "Tell KD Brain which existing Home Assistant sensors to read. All fields are optional. Powers are in watts unless the source reports kW/MW. Sign conventions: grid + = import, battery + = charging.",
+        "data": {
+          "grid_power_entity": "Grid power (signed: + import, - export)",
+          "pv_power_entity": "Solar production power",
+          "load_power_entity": "Household load power (optional; derived if empty)",
+          "battery_soc_entities": "Battery state-of-charge sensor(s)",
+          "battery_power_entities": "Battery power sensor(s) (+ charging)",
+          "battery_capacity_wh": "Battery capacity per unit"
         }
       },
       "supplier": {
@@ -83,7 +96,12 @@
       "min_price_today": { "name": "Lowest price today" },
       "max_price_today": { "name": "Highest price today" },
       "average_price_today": { "name": "Average price today" },
-      "price_data": { "name": "Price data" }
+      "price_data": { "name": "Price data" },
+      "grid_power": { "name": "Grid power" },
+      "pv_power": { "name": "Solar power" },
+      "load_power": { "name": "Household load" },
+      "battery_soc": { "name": "Battery state of charge" },
+      "battery_power": { "name": "Battery power" }
     },
     "binary_sensor": {
       "price_low": { "name": "Price is low" }

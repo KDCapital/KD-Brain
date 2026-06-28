@@ -34,7 +34,20 @@
         "title": "KD Brain-opties",
         "menu_options": {
           "supplier": "Leverancier-preset toepassen",
-          "manual": "Waarden handmatig bewerken"
+          "manual": "Waarden handmatig bewerken",
+          "devices": "Apparaten instellen (telemetrie)"
+        }
+      },
+      "devices": {
+        "title": "Apparaten & telemetrie",
+        "description": "Vertel KD Brain welke bestaande Home Assistant-sensoren het moet uitlezen. Alle velden zijn optioneel. Vermogens zijn in watt, tenzij de bron kW/MW rapporteert. Tekenconventies: net + = import, batterij + = opladen.",
+        "data": {
+          "grid_power_entity": "Netvermogen (met teken: + import, - export)",
+          "pv_power_entity": "Zonne-opwek vermogen",
+          "load_power_entity": "Huishoudelijk verbruik (optioneel; afgeleid indien leeg)",
+          "battery_soc_entities": "Batterij-laadtoestand sensor(en)",
+          "battery_power_entities": "Batterij-vermogen sensor(en) (+ opladen)",
+          "battery_capacity_wh": "Batterijcapaciteit per stuk"
         }
       },
       "supplier": {
@@ -83,7 +96,12 @@
       "min_price_today": { "name": "Laagste prijs vandaag" },
       "max_price_today": { "name": "Hoogste prijs vandaag" },
       "average_price_today": { "name": "Gemiddelde prijs vandaag" },
-      "price_data": { "name": "Prijsdata" }
+      "price_data": { "name": "Prijsdata" },
+      "grid_power": { "name": "Netvermogen" },
+      "pv_power": { "name": "Zonnevermogen" },
+      "load_power": { "name": "Huishoudelijk verbruik" },
+      "battery_soc": { "name": "Batterij-laadtoestand" },
+      "battery_power": { "name": "Batterijvermogen" }
     },
     "binary_sensor": {
       "price_low": { "name": "Prijs is laag" }

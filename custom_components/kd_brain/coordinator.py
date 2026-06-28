@@ -6,9 +6,16 @@ from datetime import timedelta
 import logging
 
 from homeassistant.config_entries import ConfigEntry
-from homeassistant.core import HomeAssistant
+from homeassistant.core import (
+    CALLBACK_TYPE,
+    Event,
+    EventStateChangedData,
+    HomeAssistant,
+    callback,
+)
 from homeassistant.helpers import issue_registry as ir
 from homeassistant.helpers.aiohttp_client import async_get_clientsession
+from homeassistant.helpers.event import async_track_state_change_event
 from homeassistant.helpers.update_coordinator import DataUpdateCoordinator, UpdateFailed
 from homeassistant.util import dt as dt_util
 
@@ -24,7 +31,8 @@ from .const import (
     MIN_UPDATE_INTERVAL_MINUTES,
     PRICE_SOURCE_EPEXPRIJZEN,
 )
-from .data.models import PriceSeries
+from .data.adapters.entity_adapter import EntityAdapter
+from .data.models import PriceSeries, Telemetry
 from .data.sources.base import PriceSource, PriceSourceError
 from .data.sources.epexprijzen import EpexPrijzenSource
 from .economics import TariffConfig
@@ -98,3 +106,46 @@ class KDBrainPriceCoordinator(DataUpdateCoordinator[PriceSeries]):
     def _async_clear_issue(self) -> None:
         """Clear the price-source availability repair issue."""
         ir.async_delete_issue(self.hass, DOMAIN, ISSUE_PRICE_SOURCE_UNAVAILABLE)
+
+
+class KDBrainTelemetryCoordinator(DataUpdateCoordinator[Telemetry]):
+    """Push-based coordinator for device telemetry read from HA entities.
+
+    It does not poll: it reads the configured source entities once and then
+    refreshes whenever any of them changes state.
+    """
+
+    def __init__(self, hass: HomeAssistant, entry: ConfigEntry) -> None:
+        """Initialise the coordinator from a config entry."""
+        super().__init__(
+            hass,
+            _LOGGER,
+            name=f"{DOMAIN}_telemetry",
+            update_interval=None,
+            config_entry=entry,
+        )
+        self._adapter = EntityAdapter(dict(entry.options))
+
+    @property
+    def adapter(self) -> EntityAdapter:
+        """Return the underlying entity adapter."""
+        return self._adapter
+
+    async def _async_update_data(self) -> Telemetry:
+        """Read the latest telemetry snapshot from source entities."""
+        return self._adapter.read(self.hass)
+
+    @callback
+    def async_setup_listeners(self) -> CALLBACK_TYPE:
+        """Subscribe to source-entity changes; return an unsubscribe callback."""
+        entity_ids = self._adapter.entity_ids
+        if not entity_ids:
+            return lambda: None
+        return async_track_state_change_event(
+            self.hass, entity_ids, self._handle_source_change
+        )
+
+    @callback
+    def _handle_source_change(self, event: Event[EventStateChangedData]) -> None:
+        """Rebuild telemetry when a tracked entity changes."""
+        self.async_set_updated_data(self._adapter.read(self.hass))

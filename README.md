@@ -29,13 +29,16 @@ beslissing zien **waarom** die genomen is.
 - 🟢 Binary sensor "prijs laag nu" t.o.v. een instelbare drempel of het daggemiddelde.
 - 🩺 **Diagnostics** (zonder gevoelige data), **Repairs** bij providerstoringen, volledige
   **Config Flow** en **Options Flow** — geen YAML nodig.
+- 🔌 **Telemetrie via bestaande HA-entiteiten** (M2): koppel je slimme meter, zonnepanelen en
+  thuisbatterijen in **Opties → Apparaten** en KD Brain leest net-, PV-, verbruik- en batterij-
+  vermogen + SOC. Geen dubbele integraties; updates komen direct binnen bij elke wijziging.
 
 ## Roadmap
 
 | Mijlpaal | Inhoud |
 | --- | --- |
-| **M1** ✅ | Foundation + prijzen (deze release) |
-| M2 | Telemetrie (HomeWizard P1, Growatt, Marstek) + SystemState |
+| **M1** ✅ | Foundation + prijzen |
+| **M2** 🟡 | Telemetrie via entity-adapters (HomeWizard P1, Growatt, Marstek) + SystemState (onbalans volgt) |
 | M3 | Optimalisatie-engine + strategieën (dry-run) |
 | M4 | Safety layer + actuators (echte sturing, opt-in) |
 | M5 | Peak shaving, MILP-arbitrage, PV/weer-forecast, NL-regelgeving 2026/2027/2029 |

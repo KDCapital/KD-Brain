@@ -6,6 +6,18 @@ All notable changes to KD Brain are documented in this file. The format is based
 
 ## [Unreleased]
 
+### Added — M2: Telemetry & state
+- Telemetry layer using the entity-adapter pattern: KD Brain reads existing Home Assistant
+  entities (HomeWizard P1, Growatt, Marstek, ...) instead of duplicating those integrations.
+- New options step "Devices & telemetry" to map entities for grid power, solar power, household
+  load and one or more home batteries (state of charge + power), with per-unit capacity.
+- Push-based telemetry coordinator that refreshes whenever a source entity changes.
+- Telemetry sensors (grid power, solar power, household load, battery state of charge, battery
+  power), created only when the corresponding entities are configured. Household load is derived
+  from the power balance when not measured directly.
+- Immutable `SystemState` snapshot (prices + telemetry) and `Telemetry` model with aggregation
+  helpers; telemetry is included in diagnostics.
+
 ### Added — M1: Foundation + prijzen
 - Home Assistant custom integration scaffold (`kd_brain`) with Config Flow, Options Flow,
   diagnostics and repairs.

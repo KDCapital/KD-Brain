@@ -17,6 +17,8 @@ from homeassistant.config_entries import (
 )
 from homeassistant.core import callback
 from homeassistant.helpers.selector import (
+    EntitySelector,
+    EntitySelectorConfig,
     NumberSelector,
     NumberSelectorConfig,
     NumberSelectorMode,
@@ -28,16 +30,23 @@ from homeassistant.helpers.selector import (
 import voluptuous as vol
 
 from .const import (
+    CONF_BATTERY_CAPACITY_WH,
+    CONF_BATTERY_POWER_ENTITIES,
+    CONF_BATTERY_SOC_ENTITIES,
     CONF_ENERGY_TAX,
     CONF_FEED_IN_MARKUP,
+    CONF_GRID_POWER_ENTITY,
+    CONF_LOAD_POWER_ENTITY,
     CONF_MONTHLY_FEE,
     CONF_PRICE_INTERVAL,
     CONF_PRICE_LOW_THRESHOLD,
     CONF_PRICE_SOURCE,
+    CONF_PV_POWER_ENTITY,
     CONF_SUPPLIER,
     CONF_SUPPLIER_MARKUP,
     CONF_UPDATE_INTERVAL_MINUTES,
     CONF_VAT,
+    DEFAULT_BATTERY_CAPACITY_WH,
     DEFAULT_ENERGY_TAX,
     DEFAULT_FEED_IN_MARKUP,
     DEFAULT_MONTHLY_FEE,
@@ -55,6 +64,15 @@ from .const import (
     PRICE_SOURCE_EPEXPRIJZEN,
 )
 from .data.providers import MANUAL, PROVIDERS
+
+# Telemetry option keys handled by the "devices" step.
+_DEVICE_ENTITY_KEYS = (
+    CONF_GRID_POWER_ENTITY,
+    CONF_PV_POWER_ENTITY,
+    CONF_LOAD_POWER_ENTITY,
+    CONF_BATTERY_SOC_ENTITIES,
+    CONF_BATTERY_POWER_ENTITIES,
+)
 
 TITLE = "KD Brain"
 
@@ -191,6 +209,59 @@ def _values_schema(values: Mapping[str, Any]) -> vol.Schema:
     )
 
 
+def _power_entity() -> EntitySelector:
+    """Return an entity selector for a power sensor."""
+    return EntitySelector(EntitySelectorConfig(domain="sensor"))
+
+
+def _power_entities() -> EntitySelector:
+    """Return an entity selector for multiple sensors."""
+    return EntitySelector(EntitySelectorConfig(domain="sensor", multiple=True))
+
+
+def _devices_schema(values: Mapping[str, Any]) -> vol.Schema:
+    """Build the telemetry/devices schema, pre-filled with ``values``."""
+
+    def suggest(key: str) -> dict[str, Any]:
+        return {"suggested_value": values.get(key)}
+
+    return vol.Schema(
+        {
+            vol.Optional(
+                CONF_GRID_POWER_ENTITY, description=suggest(CONF_GRID_POWER_ENTITY)
+            ): _power_entity(),
+            vol.Optional(
+                CONF_PV_POWER_ENTITY, description=suggest(CONF_PV_POWER_ENTITY)
+            ): _power_entity(),
+            vol.Optional(
+                CONF_LOAD_POWER_ENTITY, description=suggest(CONF_LOAD_POWER_ENTITY)
+            ): _power_entity(),
+            vol.Optional(
+                CONF_BATTERY_SOC_ENTITIES,
+                description=suggest(CONF_BATTERY_SOC_ENTITIES),
+            ): _power_entities(),
+            vol.Optional(
+                CONF_BATTERY_POWER_ENTITIES,
+                description=suggest(CONF_BATTERY_POWER_ENTITIES),
+            ): _power_entities(),
+            vol.Optional(
+                CONF_BATTERY_CAPACITY_WH,
+                default=values.get(
+                    CONF_BATTERY_CAPACITY_WH, DEFAULT_BATTERY_CAPACITY_WH
+                ),
+            ): NumberSelector(
+                NumberSelectorConfig(
+                    min=500,
+                    max=100000,
+                    step=100,
+                    mode=NumberSelectorMode.BOX,
+                    unit_of_measurement="Wh",
+                )
+            ),
+        }
+    )
+
+
 class KDBrainConfigFlow(ConfigFlow, domain=DOMAIN):
     """Handle the initial setup of KD Brain."""
 
@@ -241,8 +312,10 @@ class KDBrainOptionsFlow(OptionsFlow):
     async def async_step_init(
         self, user_input: dict[str, Any] | None = None
     ) -> ConfigFlowResult:
-        """Offer a supplier preset or manual editing."""
-        return self.async_show_menu(step_id="init", menu_options=["supplier", "manual"])
+        """Offer a supplier preset, manual tariff editing, or device setup."""
+        return self.async_show_menu(
+            step_id="init", menu_options=["supplier", "manual", "devices"]
+        )
 
     async def async_step_supplier(
         self, user_input: dict[str, Any] | None = None
@@ -268,7 +341,11 @@ class KDBrainOptionsFlow(OptionsFlow):
     ) -> ConfigFlowResult:
         """Confirm/adjust the tariff values and save."""
         if user_input is not None:
-            saved = {CONF_SUPPLIER: self._supplier, **user_input}
+            saved = {
+                **self.config_entry.options,
+                CONF_SUPPLIER: self._supplier,
+                **user_input,
+            }
             return self.async_create_entry(title="", data=saved)
 
         current = self.config_entry.options
@@ -278,4 +355,23 @@ class KDBrainOptionsFlow(OptionsFlow):
             defaults = {**_DEFAULTS, **current}
         return self.async_show_form(
             step_id="values", data_schema=_values_schema(defaults)
+        )
+
+    async def async_step_devices(
+        self, user_input: dict[str, Any] | None = None
+    ) -> ConfigFlowResult:
+        """Map Home Assistant entities onto KD Brain telemetry."""
+        if user_input is not None:
+            saved = dict(self.config_entry.options)
+            # Optional entity selectors omit cleared fields; store None so they
+            # can actually be removed instead of keeping the old value.
+            for key in _DEVICE_ENTITY_KEYS:
+                saved[key] = user_input.get(key)
+            saved[CONF_BATTERY_CAPACITY_WH] = user_input.get(
+                CONF_BATTERY_CAPACITY_WH, DEFAULT_BATTERY_CAPACITY_WH
+            )
+            return self.async_create_entry(title="", data=saved)
+        return self.async_show_form(
+            step_id="devices",
+            data_schema=_devices_schema(self.config_entry.options),
         )

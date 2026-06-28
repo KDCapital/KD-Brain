@@ -27,6 +27,14 @@ CONF_VAT: Final = "vat"
 CONF_PRICE_LOW_THRESHOLD: Final = "price_low_threshold"
 CONF_UPDATE_INTERVAL_MINUTES: Final = "update_interval_minutes"
 
+# --- Telemetry (entity-adapter) keys --------------------------------------
+CONF_GRID_POWER_ENTITY: Final = "grid_power_entity"
+CONF_PV_POWER_ENTITY: Final = "pv_power_entity"
+CONF_LOAD_POWER_ENTITY: Final = "load_power_entity"
+CONF_BATTERY_SOC_ENTITIES: Final = "battery_soc_entities"
+CONF_BATTERY_POWER_ENTITIES: Final = "battery_power_entities"
+CONF_BATTERY_CAPACITY_WH: Final = "battery_capacity_wh"
+
 # --- Price source identifiers ---------------------------------------------
 PRICE_SOURCE_EPEXPRIJZEN: Final = "epexprijzen"
 
@@ -46,6 +54,7 @@ DEFAULT_MONTHLY_FEE: Final = Decimal("6.00")  # vaste leveringskosten €/maand
 DEFAULT_VAT: Final = Decimal("0.21")  # BTW fraction
 DEFAULT_PRICE_LOW_THRESHOLD: Final = Decimal("0.20")  # all-in €/kWh
 DEFAULT_UPDATE_INTERVAL_MINUTES: Final = 30
+DEFAULT_BATTERY_CAPACITY_WH: Final = 5000  # per battery (Marstek 5 kWh)
 
 MIN_UPDATE_INTERVAL_MINUTES: Final = 5
 MAX_UPDATE_INTERVAL_MINUTES: Final = 360

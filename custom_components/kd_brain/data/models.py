@@ -126,3 +126,119 @@ class PriceSeries:
             }
             for point in self.points
         ]
+
+
+# ---------------------------------------------------------------------------
+# Telemetry (M2)
+#
+# Sign conventions (consistent across the whole integration):
+#   - grid power:    + = importing from the grid, - = exporting to the grid
+#   - pv power:      >= 0 (production)
+#   - battery power: + = charging, - = discharging
+#   - load power:    >= 0 (household consumption)
+# All powers are in watts (W). Any value may be ``None`` when the corresponding
+# entity is not configured or currently unavailable.
+# ---------------------------------------------------------------------------
+
+
+@dataclass(frozen=True, slots=True)
+class GridState:
+    """Grid connection telemetry."""
+
+    power_w: float | None = None  # + import, - export
+
+
+@dataclass(frozen=True, slots=True)
+class PvState:
+    """Solar production telemetry."""
+
+    power_w: float | None = None
+
+
+@dataclass(frozen=True, slots=True)
+class BatteryState:
+    """Telemetry for a single home battery."""
+
+    soc: float | None = None  # state of charge, percent (0-100)
+    power_w: float | None = None  # + charging, - discharging
+    capacity_wh: int | None = None
+    temp_c: float | None = None
+
+
+@dataclass(frozen=True, slots=True)
+class LoadState:
+    """Household load telemetry."""
+
+    power_w: float | None = None
+    derived: bool = False  # True when computed instead of measured
+
+
+@dataclass(frozen=True, slots=True)
+class Telemetry:
+    """A snapshot of all live device telemetry KD Brain can read."""
+
+    grid: GridState = GridState()
+    pv: PvState = PvState()
+    batteries: tuple[BatteryState, ...] = ()
+    load: LoadState = LoadState()
+
+    def battery_soc_average(self) -> float | None:
+        """Return the mean state of charge across batteries, if known."""
+        values = [b.soc for b in self.batteries if b.soc is not None]
+        return sum(values) / len(values) if values else None
+
+    def battery_power_total(self) -> float | None:
+        """Return the summed battery power across batteries, if known."""
+        values = [b.power_w for b in self.batteries if b.power_w is not None]
+        return sum(values) if values else None
+
+    def battery_capacity_total(self) -> int | None:
+        """Return the summed battery capacity across batteries, if known."""
+        values = [b.capacity_wh for b in self.batteries if b.capacity_wh is not None]
+        return sum(values) if values else None
+
+    def effective_load_w(self) -> tuple[float | None, bool]:
+        """Return household load and whether it was derived.
+
+        If load is measured directly it is returned as-is. Otherwise it is
+        derived from the power balance ``load = pv + grid - battery`` when the
+        grid power is known (missing pv/battery terms are treated as zero).
+        """
+        if self.load.power_w is not None:
+            return self.load.power_w, False
+        if self.grid.power_w is None:
+            return None, False
+        pv = self.pv.power_w or 0.0
+        battery = self.battery_power_total() or 0.0
+        return self.grid.power_w + pv - battery, True
+
+    def as_dict(self) -> dict[str, object]:
+        """Serialise telemetry for entity attributes/diagnostics."""
+        load_w, load_derived = self.effective_load_w()
+        return {
+            "grid_power_w": self.grid.power_w,
+            "pv_power_w": self.pv.power_w,
+            "battery_soc_average": self.battery_soc_average(),
+            "battery_power_total_w": self.battery_power_total(),
+            "battery_capacity_total_wh": self.battery_capacity_total(),
+            "load_power_w": load_w,
+            "load_derived": load_derived,
+            "batteries": [
+                {
+                    "soc": b.soc,
+                    "power_w": b.power_w,
+                    "capacity_wh": b.capacity_wh,
+                    "temp_c": b.temp_c,
+                }
+                for b in self.batteries
+            ],
+        }
+
+
+@dataclass(frozen=True, slots=True)
+class SystemState:
+    """Immutable snapshot combining prices and telemetry for one decision round."""
+
+    ts: datetime
+    prices: PriceSeries
+    telemetry: Telemetry

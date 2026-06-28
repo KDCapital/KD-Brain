@@ -37,6 +37,14 @@ async def async_get_config_entry_diagnostics(
             "average_all_in": None if average is None else float(average),
         }
 
+    telemetry_coordinator = entry.runtime_data.telemetry_coordinator
+    telemetry = telemetry_coordinator.data
+    telemetry_diag: dict[str, Any] = {
+        "configured": telemetry_coordinator.adapter.is_configured,
+        "last_update_success": telemetry_coordinator.last_update_success,
+        "snapshot": telemetry.as_dict() if telemetry is not None else None,
+    }
+
     return {
         "entry": {
             "options": async_redact_data(dict(entry.options), TO_REDACT),
@@ -52,4 +60,5 @@ async def async_get_config_entry_diagnostics(
             ),
         },
         "prices": sample,
+        "telemetry": telemetry_diag,
     }

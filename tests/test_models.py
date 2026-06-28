@@ -6,7 +6,15 @@ from datetime import UTC, datetime, timedelta
 from decimal import Decimal
 from zoneinfo import ZoneInfo
 
-from custom_components.kd_brain.data.models import PricePoint, PriceSeries
+from custom_components.kd_brain.data.models import (
+    BatteryState,
+    GridState,
+    LoadState,
+    PricePoint,
+    PriceSeries,
+    PvState,
+    Telemetry,
+)
 
 
 def _point(hour: int, minute: int, market: float) -> PricePoint:
@@ -99,3 +107,39 @@ def test_as_dicts() -> None:
     assert len(dicts) == 4
     assert dicts[0]["market"] == 0.10
     assert "start" in dicts[0] and "end" in dicts[0]
+
+
+def test_telemetry_battery_aggregates() -> None:
+    telemetry = Telemetry(
+        batteries=(
+            BatteryState(soc=40.0, power_w=-100.0, capacity_wh=5000),
+            BatteryState(soc=60.0, power_w=300.0, capacity_wh=5000),
+        )
+    )
+    assert telemetry.battery_soc_average() == 50.0
+    assert telemetry.battery_power_total() == 200.0
+    assert telemetry.battery_capacity_total() == 10000
+
+
+def test_telemetry_effective_load_derived() -> None:
+    telemetry = Telemetry(
+        grid=GridState(power_w=1500.0),
+        pv=PvState(power_w=2000.0),
+        batteries=(BatteryState(power_w=-500.0),),
+    )
+    # load = pv + grid - battery = 2000 + 1500 - (-500)
+    load, derived = telemetry.effective_load_w()
+    assert derived is True
+    assert load == 4000.0
+
+
+def test_telemetry_effective_load_measured() -> None:
+    telemetry = Telemetry(load=LoadState(power_w=800.0))
+    assert telemetry.effective_load_w() == (800.0, False)
+
+
+def test_empty_telemetry() -> None:
+    telemetry = Telemetry()
+    assert telemetry.battery_soc_average() is None
+    assert telemetry.battery_power_total() is None
+    assert telemetry.effective_load_w() == (None, False)
