@@ -1,0 +1,81 @@
+{
+  "config": {
+    "step": {
+      "user": {
+        "title": "KD Brain",
+        "description": "Stel dynamische energieprijzen in. Je kunt elke waarde later wijzigen via Configureren.",
+        "data": {
+          "price_source": "Prijsbron",
+          "price_interval": "Weergaveresolutie",
+          "energy_tax": "Energiebelasting (excl. BTW)",
+          "supplier_markup": "Leveranciersopslag (excl. BTW)",
+          "feed_in_markup": "Terugleverkosten (excl. BTW)",
+          "vat": "BTW (fractie, bijv. 0,21)",
+          "price_low_threshold": "Drempel lage prijs (all-in)",
+          "update_interval_minutes": "Update-interval (minuten)"
+        }
+      }
+    },
+    "abort": {
+      "single_instance_allowed": "KD Brain is al geconfigureerd. Er wordt slechts één exemplaar ondersteund."
+    }
+  },
+  "options": {
+    "step": {
+      "init": {
+        "title": "KD Brain-opties",
+        "description": "Stel de prijsbron en tariefcomponenten in waarmee de all-in prijs wordt berekend.",
+        "data": {
+          "price_source": "Prijsbron",
+          "price_interval": "Weergaveresolutie",
+          "energy_tax": "Energiebelasting (excl. BTW)",
+          "supplier_markup": "Leveranciersopslag (excl. BTW)",
+          "feed_in_markup": "Terugleverkosten (excl. BTW)",
+          "vat": "BTW (fractie, bijv. 0,21)",
+          "price_low_threshold": "Drempel lage prijs (all-in)",
+          "update_interval_minutes": "Update-interval (minuten)"
+        }
+      }
+    }
+  },
+  "selector": {
+    "price_source": {
+      "options": {
+        "epexprijzen": "epexprijzen.nl (NL day-ahead EPEX)"
+      }
+    },
+    "price_interval": {
+      "options": {
+        "hourly": "Per uur",
+        "quarterly": "Per kwartier (15 min)"
+      }
+    }
+  },
+  "entity": {
+    "sensor": {
+      "current_price": { "name": "Huidige prijs" },
+      "current_market_price": { "name": "Huidige marktprijs" },
+      "current_feed_in_price": { "name": "Huidige terugleverprijs" },
+      "next_price": { "name": "Volgende prijs" },
+      "min_price_today": { "name": "Laagste prijs vandaag" },
+      "max_price_today": { "name": "Hoogste prijs vandaag" },
+      "average_price_today": { "name": "Gemiddelde prijs vandaag" },
+      "price_data": { "name": "Prijsdata" }
+    },
+    "binary_sensor": {
+      "price_low": { "name": "Prijs is laag" }
+    }
+  },
+  "services": {
+    "recalculate": {
+      "name": "Herberekenen",
+      "description": "Laat KD Brain direct de nieuwste prijzen ophalen en opnieuw berekenen."
+    }
+  },
+  "issues": {
+    "price_source_unavailable": {
+      "title": "KD Brain kan de prijsbron niet bereiken",
+      "description": "KD Brain kon geen prijzen ophalen van {source}. Het blijft automatisch opnieuw proberen; controleer je internetverbinding als dit aanhoudt."
+    }
+  }
+}

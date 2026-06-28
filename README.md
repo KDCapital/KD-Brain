@@ -1,0 +1,73 @@
+# KD Brain
+
+> Open-source **Home Energy Management System (HEMS)** voor Nederland, gebouwd als native
+> Home Assistant-integratie. Volledig lokaal, geen cloud-afhankelijkheid voor besturing.
+
+[![hacs_badge](https://img.shields.io/badge/HACS-Custom-41BDF5.svg)](https://github.com/hacs/integration)
+
+KD Brain combineert dynamische energieprijzen, je slimme meter, thuisbatterijen, zonnepanelen,
+EV-laden en warmtepompen tot één slim, uitlegbaar energiebeheersysteem. Het neemt beslissingen
+op basis van een echte optimalisatie-engine — geen losse `if`-statements — en je kunt voor elke
+beslissing zien **waarom** die genomen is.
+
+> ⚠️ **Status: in actieve ontwikkeling (M1 — Foundation + prijzen).**
+> De huidige release levert de fundering: dynamische EPEX-prijzen (uur + kwartier) met volledige
+> all-in tariefopbouw. Sturing van hardware (batterij/PV/EV/warmtepomp) volgt in latere mijlpalen
+> en is **uit** by default (KD Brain start altijd in veilige *observe-only* modus).
+
+## Functies (M1)
+
+- 🇳🇱 **Nederlandse day-ahead EPEX-prijzen** via [epexprijzen.nl](https://epexprijzen.nl) — vandaag
+  én morgen, in **15-minuten (MTU)** resolutie met optionele uur-aggregatie.
+- 💶 **All-in prijsopbouw**: kale marktprijs + energiebelasting + leveranciersopslag + BTW, plus
+  aparte terugleververgoeding. Alle componenten configureerbaar, niets hardcoded.
+- 📊 Sensoren voor huidige prijs, volgende prijs, dag-minimum/-maximum/-gemiddelde en een
+  data-sensor met de volledige prijscurve (klaar voor grafieken/ApexCharts).
+- 🟢 Binary sensor "prijs laag nu" t.o.v. een instelbare drempel of het daggemiddelde.
+- 🩺 **Diagnostics** (zonder gevoelige data), **Repairs** bij providerstoringen, volledige
+  **Config Flow** en **Options Flow** — geen YAML nodig.
+
+## Roadmap
+
+| Mijlpaal | Inhoud |
+| --- | --- |
+| **M1** ✅ | Foundation + prijzen (deze release) |
+| M2 | Telemetrie (HomeWizard P1, Growatt, Marstek) + SystemState |
+| M3 | Optimalisatie-engine + strategieën (dry-run) |
+| M4 | Safety layer + actuators (echte sturing, opt-in) |
+| M5 | Peak shaving, MILP-arbitrage, PV/weer-forecast, NL-regelgeving 2026/2027/2029 |
+| M6 | EV & warmtepomp |
+| M7 | Dashboards, AI-ready interfaces, Quality Scale Gold |
+
+Zie [het architectuurplan](#architectuur) en `CHANGELOG.md` voor details.
+
+## Installatie (HACS)
+
+1. Voeg in HACS deze repository toe als **custom repository** (categorie *Integration*):
+   `https://github.com/KDCapital/KD-Brain`.
+2. Installeer **KD Brain** en herstart Home Assistant.
+3. Ga naar **Instellingen → Apparaten & diensten → Integratie toevoegen** en zoek **KD Brain**.
+4. Doorloop de configuratie (prijsbron + tariefcomponenten). Je kunt alles later wijzigen via
+   **Configureren** (Options Flow).
+
+> Privacy: KD Brain stuurt geen telemetrie naar buiten. De enige externe netwerkverbinding is het
+> ophalen van publieke prijzen bij epexprijzen.nl. Al je instellingen blijven lokaal in Home
+> Assistant (`.storage`).
+
+## Architectuur
+
+KD Brain is opgebouwd in lagen: **Data → Energy Engine → Strategy → Safety → Actuators**, met
+Config/Options Flow, coordinators, diagnostics en repairs als dwarsverbanden. Lezen gebeurt via
+coordinators, beslissen in de engine, en sturen uitsluitend via de verplichte Safety→Actuator-keten.
+
+## Bijdragen
+
+Zie [`CONTRIBUTING.md`](CONTRIBUTING.md). Issues en pull requests zijn welkom.
+
+## Licentie
+
+[MIT](LICENSE) © KD Capital.
+
+---
+
+*Niet gelieerd aan epexprijzen.nl, Home Assistant of de genoemde hardwarefabrikanten.*

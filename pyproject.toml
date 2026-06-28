@@ -1,0 +1,122 @@
+[project]
+name = "kd-brain"
+version = "0.1.0"
+description = "KD Brain — open-source Home Energy Management System (HEMS) for the Netherlands, built for Home Assistant."
+readme = "README.md"
+license = { text = "MIT" }
+requires-python = ">=3.13"
+authors = [{ name = "KD Capital" }]
+keywords = ["home-assistant", "energy", "hems", "epex", "battery", "solar"]
+
+# Runtime dependencies are declared in custom_components/kd_brain/manifest.json
+# (Home Assistant installs them). This list is only for local development.
+[project.optional-dependencies]
+dev = [
+  "homeassistant>=2025.1.0",
+  "pytest-homeassistant-custom-component",
+  "pytest",
+  "pytest-asyncio",
+  "pytest-cov",
+  "aioresponses",
+  "ruff",
+  "mypy",
+  "pylint",
+]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+asyncio_mode = "auto"
+addopts = "--cov=custom_components.kd_brain --cov-report=term-missing"
+
+# --------------------------------------------------------------------------
+# Ruff — aligned with Home Assistant Core conventions.
+# --------------------------------------------------------------------------
+[tool.ruff]
+target-version = "py313"
+line-length = 88
+src = ["custom_components", "tests"]
+
+[tool.ruff.lint]
+select = [
+  "A",    # flake8-builtins
+  "ASYNC",# flake8-async
+  "B",    # flake8-bugbear
+  "C4",   # flake8-comprehensions
+  "D",    # pydocstyle
+  "E",    # pycodestyle errors
+  "F",    # pyflakes
+  "I",    # isort
+  "ICN",  # flake8-import-conventions
+  "N",    # pep8-naming
+  "PGH",  # pygrep-hooks
+  "PL",   # pylint
+  "PTH",  # flake8-use-pathlib
+  "RUF",  # ruff-specific
+  "SIM",  # flake8-simplify
+  "T20",  # flake8-print
+  "TID",  # flake8-tidy-imports
+  "UP",   # pyupgrade
+  "W",    # pycodestyle warnings
+]
+ignore = [
+  "D203",   # one-blank-line-before-class (conflicts with D211)
+  "D213",   # multi-line-summary-second-line (conflicts with D212)
+  "TID252", # relative imports from parent modules are used within the package
+]
+
+[tool.ruff.lint.pydocstyle]
+convention = "pep257"
+
+[tool.ruff.lint.per-file-ignores]
+"tests/*" = ["D", "PLR2004", "S101"]
+
+[tool.ruff.lint.isort]
+force-sort-within-sections = true
+combine-as-imports = true
+known-first-party = ["custom_components.kd_brain"]
+
+# --------------------------------------------------------------------------
+# mypy — strict typing.
+# --------------------------------------------------------------------------
+[tool.mypy]
+python_version = "3.13"
+strict = true
+warn_unreachable = true
+warn_redundant_casts = true
+warn_unused_ignores = true
+disallow_any_generics = true
+no_implicit_reexport = true
+namespace_packages = true
+explicit_package_bases = true
+mypy_path = "."
+plugins = []
+
+[[tool.mypy.overrides]]
+module = "tests.*"
+disallow_untyped_defs = false
+disallow_incomplete_defs = false
+
+# --------------------------------------------------------------------------
+# Pylint — light config; Ruff covers most lint rules.
+# --------------------------------------------------------------------------
+[tool.pylint.main]
+py-version = "3.13"
+ignore = ["tests"]
+
+[tool.pylint."messages control"]
+disable = [
+  "duplicate-code",
+  "too-few-public-methods",
+  "too-many-instance-attributes",
+  "too-many-arguments",
+  "wrong-import-order",       # handled by ruff/isort
+  "missing-module-docstring", # handled by ruff (D)
+  "missing-class-docstring",
+  "missing-function-docstring",
+  "unused-argument",          # Home Assistant framework callback signatures
+  "unexpected-keyword-arg",   # false positive on inherited EntityDescription dataclasses; mypy covers this
+  "abstract-method",          # ConfigFlow.is_matching is optional for non-discovery flows
+]
+
+[tool.pylint.format]
+max-line-length = 88

@@ -1,0 +1,81 @@
+{
+  "config": {
+    "step": {
+      "user": {
+        "title": "KD Brain",
+        "description": "Set up dynamic energy prices. You can change every value later under Configure.",
+        "data": {
+          "price_source": "Price source",
+          "price_interval": "Display resolution",
+          "energy_tax": "Energy tax (excl. VAT)",
+          "supplier_markup": "Supplier markup (excl. VAT)",
+          "feed_in_markup": "Feed-in cost (excl. VAT)",
+          "vat": "VAT (fraction, e.g. 0.21)",
+          "price_low_threshold": "Low-price threshold (all-in)",
+          "update_interval_minutes": "Update interval (minutes)"
+        }
+      }
+    },
+    "abort": {
+      "single_instance_allowed": "KD Brain is already configured. Only a single instance is supported."
+    }
+  },
+  "options": {
+    "step": {
+      "init": {
+        "title": "KD Brain options",
+        "description": "Tune the price source and tariff components used to compute all-in prices.",
+        "data": {
+          "price_source": "Price source",
+          "price_interval": "Display resolution",
+          "energy_tax": "Energy tax (excl. VAT)",
+          "supplier_markup": "Supplier markup (excl. VAT)",
+          "feed_in_markup": "Feed-in cost (excl. VAT)",
+          "vat": "VAT (fraction, e.g. 0.21)",
+          "price_low_threshold": "Low-price threshold (all-in)",
+          "update_interval_minutes": "Update interval (minutes)"
+        }
+      }
+    }
+  },
+  "selector": {
+    "price_source": {
+      "options": {
+        "epexprijzen": "epexprijzen.nl (NL day-ahead EPEX)"
+      }
+    },
+    "price_interval": {
+      "options": {
+        "hourly": "Hourly",
+        "quarterly": "Quarter-hourly (15 min)"
+      }
+    }
+  },
+  "entity": {
+    "sensor": {
+      "current_price": { "name": "Current price" },
+      "current_market_price": { "name": "Current market price" },
+      "current_feed_in_price": { "name": "Current feed-in price" },
+      "next_price": { "name": "Next price" },
+      "min_price_today": { "name": "Lowest price today" },
+      "max_price_today": { "name": "Highest price today" },
+      "average_price_today": { "name": "Average price today" },
+      "price_data": { "name": "Price data" }
+    },
+    "binary_sensor": {
+      "price_low": { "name": "Price is low" }
+    }
+  },
+  "services": {
+    "recalculate": {
+      "name": "Recalculate",
+      "description": "Force KD Brain to fetch the latest prices and recompute immediately."
+    }
+  },
+  "issues": {
+    "price_source_unavailable": {
+      "title": "KD Brain cannot reach the price source",
+      "description": "KD Brain could not retrieve prices from {source}. It will keep retrying automatically; check your internet connection if this persists."
+    }
+  }
+}

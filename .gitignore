@@ -1,0 +1,72 @@
+# ==========================================================================
+# KD Brain — .gitignore
+# This repository is PUBLIC and used to install the integration in Home
+# Assistant. Never commit secrets, tokens, IP addresses, serial numbers or
+# personal measurement data. All user configuration lives in HA config
+# entries (.storage), never in git.
+# ==========================================================================
+
+# --- Secrets / local config (NEVER commit) ---
+secrets.yaml
+.secrets
+*.secret
+*.pem
+*.key
+.env
+.env.*
+!.env.example
+
+# --- Home Assistant runtime / test instance ---
+.storage/
+home-assistant.log*
+home-assistant_v2.db*
+*.db-wal
+*.db-shm
+config/
+!tests/fixtures/
+
+# --- Python ---
+__pycache__/
+*.py[cod]
+*$py.class
+*.egg-info/
+.eggs/
+build/
+dist/
+.installed.cfg
+*.egg
+
+# --- Virtual environments ---
+.venv/
+venv/
+env/
+ENV/
+
+# --- Tooling caches ---
+.mypy_cache/
+.ruff_cache/
+.pytest_cache/
+.coverage
+.coverage.*
+coverage.xml
+htmlcov/
+.tox/
+.cache/
+
+# --- IDE / editor ---
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
+
+# --- OS ---
+.DS_Store
+Thumbs.db
+desktop.ini
+
+.claude/
+.claude
+
+test/
+test

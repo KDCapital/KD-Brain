@@ -1,0 +1,5 @@
+recalculate:
+  name: Recalculate
+  description: >-
+    Force KD Brain to fetch the latest prices and recompute immediately,
+    instead of waiting for the next scheduled update.
