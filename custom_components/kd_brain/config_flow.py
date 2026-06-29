@@ -34,8 +34,10 @@ from .const import (
     CONF_BATTERY_CAPACITY_WH,
     CONF_BATTERY_MAX_SOC,
     CONF_BATTERY_MIN_SOC,
+    CONF_BATTERY_POWER_CONTROL_ENTITY,
     CONF_BATTERY_POWER_ENTITIES,
     CONF_BATTERY_SOC_ENTITIES,
+    CONF_CONTROL_MODE,
     CONF_DEGRADATION_COST,
     CONF_ENABLE_ARBITRAGE,
     CONF_ENABLE_DYNAMIC_PRICING,
@@ -43,11 +45,13 @@ from .const import (
     CONF_ENERGY_TAX,
     CONF_FEED_IN_MARKUP,
     CONF_GRID_POWER_ENTITY,
+    CONF_HYSTERESIS_W,
     CONF_IMBALANCE_PRICE_ENTITY,
     CONF_IMBALANCE_UNIT,
     CONF_LOAD_POWER_ENTITY,
     CONF_MAX_CHARGE_POWER_W,
     CONF_MAX_DISCHARGE_POWER_W,
+    CONF_MIN_DWELL_SECONDS,
     CONF_MONTHLY_FEE,
     CONF_PRICE_INTERVAL,
     CONF_PRICE_LOW_THRESHOLD,
@@ -59,18 +63,24 @@ from .const import (
     CONF_SUPPLIER_MARKUP,
     CONF_UPDATE_INTERVAL_MINUTES,
     CONF_VAT,
+    CONF_WRITE_THROTTLE_SECONDS,
+    CONTROL_ACTIVE,
+    CONTROL_OBSERVE,
     DEFAULT_BATTERY_CAPACITY_WH,
     DEFAULT_BATTERY_MAX_SOC,
     DEFAULT_BATTERY_MIN_SOC,
+    DEFAULT_CONTROL_MODE,
     DEFAULT_DEGRADATION_COST,
     DEFAULT_ENABLE_ARBITRAGE,
     DEFAULT_ENABLE_DYNAMIC_PRICING,
     DEFAULT_ENABLE_SELF_CONSUMPTION,
     DEFAULT_ENERGY_TAX,
     DEFAULT_FEED_IN_MARKUP,
+    DEFAULT_HYSTERESIS_W,
     DEFAULT_IMBALANCE_UNIT,
     DEFAULT_MAX_CHARGE_POWER_W,
     DEFAULT_MAX_DISCHARGE_POWER_W,
+    DEFAULT_MIN_DWELL_SECONDS,
     DEFAULT_MONTHLY_FEE,
     DEFAULT_PRICE_INTERVAL,
     DEFAULT_PRICE_LOW_THRESHOLD,
@@ -80,6 +90,7 @@ from .const import (
     DEFAULT_SUPPLIER_MARKUP,
     DEFAULT_UPDATE_INTERVAL_MINUTES,
     DEFAULT_VAT,
+    DEFAULT_WRITE_THROTTLE_SECONDS,
     DOMAIN,
     IMBALANCE_UNIT_KWH,
     IMBALANCE_UNIT_MWH,
@@ -389,6 +400,65 @@ def _strategy_schema(values: Mapping[str, Any]) -> vol.Schema:
     )
 
 
+def _seconds() -> NumberSelector:
+    """Return a seconds number selector for throttling/dwell."""
+    return NumberSelector(
+        NumberSelectorConfig(
+            min=0,
+            max=3600,
+            step=5,
+            mode=NumberSelectorMode.BOX,
+            unit_of_measurement="s",
+        )
+    )
+
+
+def _control_schema(values: Mapping[str, Any]) -> vol.Schema:
+    """Build the control/safety schema, pre-filled with ``values``."""
+    return vol.Schema(
+        {
+            vol.Required(
+                CONF_CONTROL_MODE,
+                default=values.get(CONF_CONTROL_MODE, DEFAULT_CONTROL_MODE),
+            ): SelectSelector(
+                SelectSelectorConfig(
+                    options=[CONTROL_OBSERVE, CONTROL_ACTIVE],
+                    translation_key="control_mode",
+                    mode=SelectSelectorMode.DROPDOWN,
+                )
+            ),
+            vol.Optional(
+                CONF_BATTERY_POWER_CONTROL_ENTITY,
+                description={
+                    "suggested_value": values.get(CONF_BATTERY_POWER_CONTROL_ENTITY)
+                },
+            ): EntitySelector(EntitySelectorConfig(domain="number")),
+            vol.Required(
+                CONF_WRITE_THROTTLE_SECONDS,
+                default=values.get(
+                    CONF_WRITE_THROTTLE_SECONDS, DEFAULT_WRITE_THROTTLE_SECONDS
+                ),
+            ): _seconds(),
+            vol.Required(
+                CONF_MIN_DWELL_SECONDS,
+                default=values.get(CONF_MIN_DWELL_SECONDS, DEFAULT_MIN_DWELL_SECONDS),
+            ): _seconds(),
+            vol.Required(
+                CONF_HYSTERESIS_W,
+                default=values.get(CONF_HYSTERESIS_W, DEFAULT_HYSTERESIS_W),
+            ): NumberSelector(
+                NumberSelectorConfig(
+                    min=0,
+                    max=5000,
+                    step=10,
+                    mode=NumberSelectorMode.BOX,
+                    unit_of_measurement="W",
+                )
+            ),
+        }
+    )
+
+
 class KDBrainConfigFlow(ConfigFlow, domain=DOMAIN):
     """Handle the initial setup of KD Brain."""
 
@@ -439,10 +509,10 @@ class KDBrainOptionsFlow(OptionsFlow):
     async def async_step_init(
         self, user_input: dict[str, Any] | None = None
     ) -> ConfigFlowResult:
-        """Offer supplier preset, manual tariff editing, devices, or strategies."""
+        """Offer supplier, tariff, devices, strategy or control configuration."""
         return self.async_show_menu(
             step_id="init",
-            menu_options=["supplier", "manual", "devices", "strategy"],
+            menu_options=["supplier", "manual", "devices", "strategy", "control"],
         )
 
     async def async_step_supplier(
@@ -517,4 +587,20 @@ class KDBrainOptionsFlow(OptionsFlow):
         return self.async_show_form(
             step_id="strategy",
             data_schema=_strategy_schema(self.config_entry.options),
+        )
+
+    async def async_step_control(
+        self, user_input: dict[str, Any] | None = None
+    ) -> ConfigFlowResult:
+        """Configure control mode, the control entity and safety timings."""
+        if user_input is not None:
+            saved = {**self.config_entry.options, **user_input}
+            # Optional control entity is cleared when omitted.
+            saved[CONF_BATTERY_POWER_CONTROL_ENTITY] = user_input.get(
+                CONF_BATTERY_POWER_CONTROL_ENTITY
+            )
+            return self.async_create_entry(title="", data=saved)
+        return self.async_show_form(
+            step_id="control",
+            data_schema=_control_schema(self.config_entry.options),
         )

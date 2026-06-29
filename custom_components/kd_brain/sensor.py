@@ -35,6 +35,7 @@ from .const import (
     PRICE_PRECISION,
 )
 from .coordinator import (
+    KDBrainActuationCoordinator,
     KDBrainOptimizationCoordinator,
     KDBrainPriceCoordinator,
     KDBrainTelemetryCoordinator,
@@ -42,6 +43,7 @@ from .coordinator import (
 from .data.models import PriceSeries, Telemetry
 from .engine.decision import BatteryAction
 from .entity import (
+    KDBrainActuationEntity,
     KDBrainOptimizationEntity,
     KDBrainPriceEntity,
     KDBrainTelemetryEntity,
@@ -219,6 +221,7 @@ async def async_setup_entry(
     optimization = runtime.optimization_coordinator
     entities.append(KDBrainRecommendedActionSensor(optimization))
     entities.append(KDBrainActiveStrategySensor(optimization))
+    entities.append(KDBrainLastActuationSensor(runtime.actuation_coordinator))
 
     async_add_entities(entities)
 
@@ -390,3 +393,25 @@ class KDBrainActiveStrategySensor(KDBrainOptimizationEntity, SensorEntity):
         """Expose the rationale for the active strategy."""
         decision = self.coordinator.data
         return None if decision is None else {"why": decision.why}
+
+
+class KDBrainLastActuationSensor(KDBrainActuationEntity, SensorEntity):
+    """The safety-approved action and whether it was actually applied."""
+
+    _attr_translation_key = "last_actuation"
+
+    def __init__(self, coordinator: KDBrainActuationCoordinator) -> None:
+        """Initialise the sensor."""
+        super().__init__(coordinator, "last_actuation")
+
+    @property
+    def native_value(self) -> StateType:
+        """Return the safety-approved action."""
+        result = self.coordinator.data
+        return None if result is None else result.outcome.action.action.value
+
+    @property
+    def extra_state_attributes(self) -> dict[str, Any] | None:
+        """Expose mode, whether it was written, and the safety reasons."""
+        result = self.coordinator.data
+        return None if result is None else result.as_dict()

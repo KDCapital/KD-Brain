@@ -35,7 +35,12 @@ beslissing zien **waarom** die genomen is.
 - 🧠 **Uitlegbare optimalisatie-engine** (M3): 3 in/uit-schakelbare strategieën (zelfverbruik,
   dynamische prijzen, arbitrage met echt economisch model). De sensor **Aanbevolen actie** toont
   wat KD Brain zou doen én *waarom* — inclusief alle overwogen voorstellen en waarom alternatieven
-  afvielen. **Observe-only**: nog geen aansturing van hardware (dat is M4).
+  afvielen.
+- 🛡️ **Veiligheidslaag + echte sturing** (M4): zet je in **Opties → Sturing & veiligheid** op
+  *Actief* (standaard uit), dan stuurt KD Brain je batterij via een door jou gekozen
+  `number`-besturingsentiteit. Elke schrijfactie passeert een verplichte safety-poort: SOC-grenzen,
+  vermogensbegrenzing, anti-oscillatie (min-dwell), write-throttle en hysterese. Volledig uitlegbaar
+  via de sensor **Laatste sturing**.
 
 ## Roadmap
 
@@ -44,7 +49,7 @@ beslissing zien **waarom** die genomen is.
 | **M1** ✅ | Foundation + prijzen |
 | **M2** ✅ | Telemetrie via entity-adapters (HomeWizard P1, Growatt, Marstek) + SystemState + onbalansprijzen |
 | **M3** ✅ | Optimalisatie-engine + 3 strategieën + uitlegbare beslissing (observe-only) |
-| M4 | Safety layer + actuators (echte sturing, opt-in) |
+| **M4** ✅ | Safety layer + actuators — echte sturing van de batterij (opt-in) |
 | M5 | Peak shaving, MILP-arbitrage, PV/weer-forecast, NL-regelgeving 2026/2027/2029 |
 | M6 | EV & warmtepomp |
 | M7 | Dashboards, AI-ready interfaces, Quality Scale Gold |

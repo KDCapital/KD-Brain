@@ -19,12 +19,15 @@ from homeassistant.helpers.event import async_track_state_change_event
 from homeassistant.helpers.update_coordinator import DataUpdateCoordinator, UpdateFailed
 from homeassistant.util import dt as dt_util
 
+from .actuators.base import ActuationResult
+from .actuators.registry import build_actuator
 from .const import (
     CONF_PRICE_SOURCE,
     CONF_UPDATE_INTERVAL_MINUTES,
     DEFAULT_PRICE_SOURCE,
     DEFAULT_UPDATE_INTERVAL_MINUTES,
     DOMAIN,
+    EVENT_ACTUATION,
     EVENT_DECISION,
     EVENT_PRICES_UPDATED,
     ISSUE_PRICE_SOURCE_UNAVAILABLE,
@@ -41,6 +44,9 @@ from .engine.config import OptimizerConfig
 from .engine.decision import Decision
 from .engine.optimizer import optimize
 from .engine.state import build_system_state
+from .safety.config import SafetyConfig
+from .safety.gate import evaluate
+from .safety.state import ControlState
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -214,4 +220,84 @@ class KDBrainOptimizationCoordinator(DataUpdateCoordinator[Decision | None]):
     @callback
     def _handle_upstream(self) -> None:
         """Schedule a debounced recompute on an upstream update."""
+        self.hass.async_create_task(self.async_request_refresh())
+
+
+class KDBrainActuationCoordinator(DataUpdateCoordinator[ActuationResult | None]):
+    """Runs every decision through the safety gate and (optionally) actuates.
+
+    In observe-only mode it evaluates and reports what would happen but never
+    writes. In active mode it writes the safety-approved setpoint via the
+    actuator, subject to throttling, hysteresis and anti-oscillation.
+    """
+
+    def __init__(
+        self,
+        hass: HomeAssistant,
+        entry: ConfigEntry,
+        optimization_coordinator: KDBrainOptimizationCoordinator,
+        telemetry_coordinator: KDBrainTelemetryCoordinator,
+    ) -> None:
+        """Initialise from the optimisation and telemetry coordinators."""
+        super().__init__(
+            hass,
+            _LOGGER,
+            name=f"{DOMAIN}_actuation",
+            update_interval=None,
+            config_entry=entry,
+        )
+        self._optimization = optimization_coordinator
+        self._telemetry = telemetry_coordinator
+        self._control_state = ControlState()
+        self._actuator = build_actuator(dict(entry.options))
+
+    @property
+    def safety_config(self) -> SafetyConfig:
+        """Return the safety config built from the current entry options."""
+        assert self.config_entry is not None
+        return SafetyConfig.from_options(dict(self.config_entry.options))
+
+    async def _async_update_data(self) -> ActuationResult | None:
+        """Evaluate the latest decision through safety and actuate if active."""
+        decision = self._optimization.data
+        if decision is None:
+            return None
+        telemetry = self._telemetry.data or Telemetry()
+        config = self.safety_config
+        now = dt_util.utcnow()
+
+        outcome = evaluate(decision.chosen, telemetry, self._control_state, config, now)
+
+        written = False
+        if config.is_active and self._actuator.is_configured and outcome.write:
+            await self._actuator.async_apply(self.hass, outcome.signed_w)
+            self._control_state.record(outcome.signed_w, now)
+            written = True
+
+        result = ActuationResult(
+            ts=now,
+            mode=config.control_mode,
+            intended=decision.chosen,
+            outcome=outcome,
+            written=written,
+        )
+        self.hass.bus.async_fire(
+            EVENT_ACTUATION,
+            {
+                "mode": config.control_mode,
+                "written": written,
+                "action": outcome.action.action.value,
+                "power_w": outcome.signed_w,
+            },
+        )
+        return result
+
+    @callback
+    def async_setup_listeners(self) -> list[CALLBACK_TYPE]:
+        """Re-evaluate whenever a new decision is produced."""
+        return [self._optimization.async_add_listener(self._handle_upstream)]
+
+    @callback
+    def _handle_upstream(self) -> None:
+        """Schedule an actuation pass on a new decision."""
         self.hass.async_create_task(self.async_request_refresh())

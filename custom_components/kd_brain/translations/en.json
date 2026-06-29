@@ -36,7 +36,19 @@
           "supplier": "Apply a supplier preset",
           "manual": "Edit values manually",
           "devices": "Configure devices (telemetry)",
-          "strategy": "Strategies, economics & battery limits"
+          "strategy": "Strategies, economics & battery limits",
+          "control": "Control & safety"
+        }
+      },
+      "control": {
+        "title": "Control & safety",
+        "description": "⚠️ Active control lets KD Brain steer your battery via the chosen control entity. It is OFF by default. Every write passes the safety gate (SOC limits, power clamp, anti-oscillation, write-throttle, hysteresis). Leave on observe-only to keep recommendations without steering.",
+        "data": {
+          "control_mode": "Control mode",
+          "battery_power_control_entity": "Battery power control entity (signed: + charge, - discharge)",
+          "write_throttle_seconds": "Minimum time between writes",
+          "min_dwell_seconds": "Minimum dwell before reversing direction",
+          "hysteresis_w": "Hysteresis (ignore changes smaller than)"
         }
       },
       "strategy": {
@@ -110,6 +122,12 @@
         "eur_kwh": "€/kWh",
         "eur_mwh": "€/MWh"
       }
+    },
+    "control_mode": {
+      "options": {
+        "observe_only": "Observe only (recommend, do not steer)",
+        "active": "Active (steer the battery)"
+      }
     }
   },
   "entity": {
@@ -136,10 +154,13 @@
           "discharge": "Discharge"
         }
       },
-      "active_strategy": { "name": "Active strategy" }
+      "active_strategy": { "name": "Active strategy" },
+      "last_actuation": { "name": "Last actuation" }
     },
     "binary_sensor": {
-      "price_low": { "name": "Price is low" }
+      "price_low": { "name": "Price is low" },
+      "active_control": { "name": "Active control" },
+      "safety_intervened": { "name": "Safety intervened" }
     }
   },
   "services": {

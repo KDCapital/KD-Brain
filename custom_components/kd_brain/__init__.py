@@ -18,6 +18,7 @@ from homeassistant.core import HomeAssistant
 
 from .const import PLATFORMS
 from .coordinator import (
+    KDBrainActuationCoordinator,
     KDBrainOptimizationCoordinator,
     KDBrainPriceCoordinator,
     KDBrainTelemetryCoordinator,
@@ -39,6 +40,7 @@ class KDBrainRuntimeData:
     price_coordinator: KDBrainPriceCoordinator
     telemetry_coordinator: KDBrainTelemetryCoordinator
     optimization_coordinator: KDBrainOptimizationCoordinator
+    actuation_coordinator: KDBrainActuationCoordinator
 
 
 async def async_setup_entry(hass: HomeAssistant, entry: KDBrainConfigEntry) -> bool:
@@ -57,10 +59,18 @@ async def async_setup_entry(hass: HomeAssistant, entry: KDBrainConfigEntry) -> b
     for unsub in optimization_coordinator.async_setup_listeners():
         entry.async_on_unload(unsub)
 
+    actuation_coordinator = KDBrainActuationCoordinator(
+        hass, entry, optimization_coordinator, telemetry_coordinator
+    )
+    await actuation_coordinator.async_refresh()
+    for unsub in actuation_coordinator.async_setup_listeners():
+        entry.async_on_unload(unsub)
+
     entry.runtime_data = KDBrainRuntimeData(
         price_coordinator=price_coordinator,
         telemetry_coordinator=telemetry_coordinator,
         optimization_coordinator=optimization_coordinator,
+        actuation_coordinator=actuation_coordinator,
     )
 
     await hass.config_entries.async_forward_entry_setups(entry, PLATFORMS)

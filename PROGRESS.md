@@ -6,7 +6,7 @@
 
 **Legenda:** ✅ klaar · 🟡 in uitvoering · ⬜ gepland · 🔒 geblokkeerd/afhankelijk
 
-**Laatst bijgewerkt:** 2026-06-28 · **Huidige release:** M3 (engine + strategieën, observe-only) + onbalans · **Versie:** 0.3.1
+**Laatst bijgewerkt:** 2026-06-28 · **Huidige release:** M4 (safety + actuators, opt-in sturing) · **Versie:** 0.4.0
 
 ---
 
@@ -17,7 +17,7 @@
 | **M1** | Foundation + prijzen | ✅ | HACS-structuur, config/options flow, coordinator, epexprijzen.nl, prijssensoren, diagnostics, repairs, CI |
 | **M2** | Telemetrie & state | ✅ | entity-adapters (HomeWizard P1, Growatt, Marstek) + telemetrie-sensoren + `SystemState` + onbalansprijzen (via entity) |
 | **M3** | Engine + strategieën (dry-run) | ✅ | OptimizationCoordinator, economics (degradatie/roundtrip/marge), heuristische optimizer, `Decision`/uitlegbaarheid, 3 strategieën, aanbevolen-actie sensor |
-| **M4** | Safety + actuators (echte sturing) | ⬜ | Safety layer, actuators Marstek (Modbus) + Growatt (MQTT), dry-run→active opt-in |
+| **M4** | Safety + actuators (echte sturing) | ✅ | Safety gate (SOC/vermogen/anti-oscillatie/throttle/hysterese), entity-actuator (number.set_value), observe→active opt-in |
 | **M5** | Uitbreiding | ⬜ | Peak shaving, MILP-arbitrage (highspy), PV/weer-forecast, NL-regelgeving 2026/2027/2029 |
 | **M6** | EV & warmtepomp | ⬜ | Strategieën + safety + actuators voor laden en warmtepomp |
 | **M7** | Dashboards + AI-ready + Gold | ⬜ | Auto-dashboards, `Forecaster`-interfaces voor ML, Quality Scale Gold |
@@ -90,16 +90,16 @@
 ### 4. Safety Layer
 | Regelset | Status | Mijlpaal |
 |----------|:------:|:--------:|
-| Batterij (SOC, stroom, temp, degradatie, anti-oscillatie) | ⬜ | M4 |
-| Modbus/MQTT I/O (RAM-registers, write-throttle, debounce, hysterese) | ⬜ | M4 |
+| Batterij (SOC, vermogen, anti-oscillatie/min-dwell) | ✅ | M4 |
+| I/O-bescherming (write-throttle, no-write-if-unchanged, hysterese) | ✅ | M4 |
 | EV (IEC61851 6A, load/fase-balans) | ⬜ | M6 |
 | Warmtepomp (min runtime/off, anti short-cycle) | ⬜ | M6 |
 
 ### 5. Actuator Layer
 | Actuator | Status | Mijlpaal |
 |----------|:------:|:--------:|
-| Marstek (Modbus) | ⬜ | M4 |
-| Growatt (MQTT) | ⬜ | M4 |
+| Generieke entity-actuator (number.set_value) | ✅ | M4 |
+| Marstek/Growatt via control-entiteit (signed power) | ✅ | M4 |
 | EVSE | ⬜ | M6 |
 | Warmtepomp | ⬜ | M6 |
 

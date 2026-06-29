@@ -6,6 +6,21 @@ All notable changes to KD Brain are documented in this file. The format is based
 
 ## [Unreleased]
 
+### Added — M4: Safety layer & actuators (opt-in control)
+- Mandatory **safety gate** that every actuation passes: SOC limits (hard block), power clamp,
+  anti-oscillation min-dwell, write-throttle and no-write-if-unchanged hysteresis. It can clamp to
+  idle or a lower power and records human-readable reasons; it cannot be overridden by a strategy.
+- **Actuator layer**: drives an existing Home Assistant `number` control entity (signed power:
+  + charge / − discharge) via `number.set_value`, reusing the battery integration's own write path
+  instead of writing raw Modbus/MQTT. Dry-run is the default null actuator.
+- **Actuation coordinator** that runs each decision through the safety gate and, only in active
+  mode, writes the approved setpoint; fires a `kd_brain_actuation` event.
+- New options step "Control & safety": control mode (observe-only ↔ active, **off by default**),
+  battery power control entity, write-throttle, min-dwell and hysteresis.
+- New entities: "Last actuation" sensor (with safety reasons), "Active control" and
+  "Safety intervened" binary sensors. Actuation included in diagnostics.
+- KD Brain only steers hardware after the user explicitly switches to active mode.
+
 ### Added — M3: Optimisation engine & strategies (observe-only)
 - Explainable decision engine: each round produces a `Decision` recording the chosen action,
   the winning strategy, every considered proposal with its score, and the reason each

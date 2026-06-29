@@ -36,7 +36,19 @@
           "supplier": "Leverancier-preset toepassen",
           "manual": "Waarden handmatig bewerken",
           "devices": "Apparaten instellen (telemetrie)",
-          "strategy": "Strategieën, economie & batterijgrenzen"
+          "strategy": "Strategieën, economie & batterijgrenzen",
+          "control": "Sturing & veiligheid"
+        }
+      },
+      "control": {
+        "title": "Sturing & veiligheid",
+        "description": "⚠️ Met actieve sturing stuurt KD Brain je batterij aan via de gekozen besturingsentiteit. Dit staat standaard UIT. Elke schrijfactie passeert de veiligheidspoort (SOC-grenzen, vermogensbegrenzing, anti-oscillatie, write-throttle, hysterese). Laat op observe-only voor alleen aanbevelingen zonder sturing.",
+        "data": {
+          "control_mode": "Besturingsmodus",
+          "battery_power_control_entity": "Batterij-vermogen besturingsentiteit (met teken: + laden, - ontladen)",
+          "write_throttle_seconds": "Minimale tijd tussen schrijfacties",
+          "min_dwell_seconds": "Minimale wachttijd voor richtingomkering",
+          "hysteresis_w": "Hysterese (negeer wijzigingen kleiner dan)"
         }
       },
       "strategy": {
@@ -110,6 +122,12 @@
         "eur_kwh": "€/kWh",
         "eur_mwh": "€/MWh"
       }
+    },
+    "control_mode": {
+      "options": {
+        "observe_only": "Alleen observeren (adviseren, niet sturen)",
+        "active": "Actief (batterij aansturen)"
+      }
     }
   },
   "entity": {
@@ -136,10 +154,13 @@
           "discharge": "Ontladen"
         }
       },
-      "active_strategy": { "name": "Actieve strategie" }
+      "active_strategy": { "name": "Actieve strategie" },
+      "last_actuation": { "name": "Laatste sturing" }
     },
     "binary_sensor": {
-      "price_low": { "name": "Prijs is laag" }
+      "price_low": { "name": "Prijs is laag" },
+      "active_control": { "name": "Actieve sturing" },
+      "safety_intervened": { "name": "Veiligheid ingegrepen" }
     }
   },
   "services": {

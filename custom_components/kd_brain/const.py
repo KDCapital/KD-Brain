@@ -54,6 +54,17 @@ CONF_BATTERY_MAX_SOC: Final = "battery_max_soc"
 CONF_MAX_CHARGE_POWER_W: Final = "max_charge_power_w"
 CONF_MAX_DISCHARGE_POWER_W: Final = "max_discharge_power_w"
 
+# --- Control & safety (M4) -------------------------------------------------
+CONF_CONTROL_MODE: Final = "control_mode"
+CONF_BATTERY_POWER_CONTROL_ENTITY: Final = "battery_power_control_entity"
+CONF_WRITE_THROTTLE_SECONDS: Final = "write_throttle_seconds"
+CONF_MIN_DWELL_SECONDS: Final = "min_dwell_seconds"
+CONF_HYSTERESIS_W: Final = "hysteresis_w"
+
+# Control modes: observe-only recommends; active actually steers hardware.
+CONTROL_OBSERVE: Final = "observe_only"
+CONTROL_ACTIVE: Final = "active"
+
 # --- Price source identifiers ---------------------------------------------
 PRICE_SOURCE_EPEXPRIJZEN: Final = "epexprijzen"
 
@@ -87,6 +98,12 @@ DEFAULT_BATTERY_MAX_SOC: Final = 95.0  # percent
 DEFAULT_MAX_CHARGE_POWER_W: Final = 2500
 DEFAULT_MAX_DISCHARGE_POWER_W: Final = 2500
 
+# Control & safety defaults — observe-only until the user explicitly opts in.
+DEFAULT_CONTROL_MODE: Final = CONTROL_OBSERVE
+DEFAULT_WRITE_THROTTLE_SECONDS: Final = 60
+DEFAULT_MIN_DWELL_SECONDS: Final = 300
+DEFAULT_HYSTERESIS_W: Final = 100
+
 MIN_UPDATE_INTERVAL_MINUTES: Final = 5
 MAX_UPDATE_INTERVAL_MINUTES: Final = 360
 
@@ -106,6 +123,7 @@ SYSTEM_MODE_OBSERVE: Final = "observe_only"
 # --- Diagnostics / events --------------------------------------------------
 EVENT_PRICES_UPDATED: Final = "kd_brain_prices_updated"
 EVENT_DECISION: Final = "kd_brain_decision"
+EVENT_ACTUATION: Final = "kd_brain_actuation"
 
 # --- Repairs issue identifiers --------------------------------------------
 ISSUE_PRICE_SOURCE_UNAVAILABLE: Final = "price_source_unavailable"

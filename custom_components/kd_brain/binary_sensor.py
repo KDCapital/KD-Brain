@@ -16,9 +16,9 @@ from .const import (
     DEFAULT_PRICE_LOW_THRESHOLD,
     PRICE_PRECISION,
 )
-from .coordinator import KDBrainPriceCoordinator
+from .coordinator import KDBrainActuationCoordinator, KDBrainPriceCoordinator
 from .data.models import PricePoint
-from .entity import KDBrainPriceEntity
+from .entity import KDBrainActuationEntity, KDBrainPriceEntity
 
 
 async def async_setup_entry(
@@ -27,8 +27,14 @@ async def async_setup_entry(
     async_add_entities: AddEntitiesCallback,
 ) -> None:
     """Set up KD Brain binary sensors."""
-    coordinator = entry.runtime_data.price_coordinator
-    async_add_entities([KDBrainPriceLowBinarySensor(coordinator)])
+    runtime = entry.runtime_data
+    async_add_entities(
+        [
+            KDBrainPriceLowBinarySensor(runtime.price_coordinator),
+            KDBrainActiveControlBinarySensor(runtime.actuation_coordinator),
+            KDBrainSafetyInterventionBinarySensor(runtime.actuation_coordinator),
+        ]
+    )
 
 
 class KDBrainPriceLowBinarySensor(KDBrainPriceEntity, BinarySensorEntity):
@@ -68,3 +74,40 @@ class KDBrainPriceLowBinarySensor(KDBrainPriceEntity, BinarySensorEntity):
                 None if point is None else round(float(point.all_in), PRICE_PRECISION)
             ),
         }
+
+
+class KDBrainActiveControlBinarySensor(KDBrainActuationEntity, BinarySensorEntity):
+    """On when KD Brain is allowed to actively steer hardware."""
+
+    _attr_translation_key = "active_control"
+
+    def __init__(self, coordinator: KDBrainActuationCoordinator) -> None:
+        """Initialise the binary sensor."""
+        super().__init__(coordinator, "active_control")
+
+    @property
+    def is_on(self) -> bool:
+        """Return whether active control is enabled."""
+        return self.coordinator.safety_config.is_active
+
+
+class KDBrainSafetyInterventionBinarySensor(KDBrainActuationEntity, BinarySensorEntity):
+    """On when the safety layer clamped or blocked the intended action."""
+
+    _attr_translation_key = "safety_intervened"
+
+    def __init__(self, coordinator: KDBrainActuationCoordinator) -> None:
+        """Initialise the binary sensor."""
+        super().__init__(coordinator, "safety_intervened")
+
+    @property
+    def is_on(self) -> bool | None:
+        """Return whether safety intervened on the latest decision."""
+        result = self.coordinator.data
+        return None if result is None else result.intervened
+
+    @property
+    def extra_state_attributes(self) -> dict[str, Any] | None:
+        """Expose the safety reasons."""
+        result = self.coordinator.data
+        return None if result is None else {"reasons": list(result.outcome.reasons)}

@@ -10,12 +10,15 @@ from pytest_homeassistant_custom_component.common import MockConfigEntry
 
 from custom_components.kd_brain.const import (
     CONF_BATTERY_CAPACITY_WH,
+    CONF_BATTERY_POWER_CONTROL_ENTITY,
     CONF_BATTERY_SOC_ENTITIES,
+    CONF_CONTROL_MODE,
     CONF_ENABLE_ARBITRAGE,
     CONF_GRID_POWER_ENTITY,
     CONF_SUPPLIER,
     CONF_SUPPLIER_MARKUP,
     CONF_VAT,
+    CONTROL_ACTIVE,
     DOMAIN,
 )
 from custom_components.kd_brain.data.providers import MANUAL, PROVIDERS
@@ -190,4 +193,36 @@ async def test_options_flow_strategy(
 
     assert result["type"] is FlowResultType.CREATE_ENTRY
     assert mock_entry.options[CONF_ENABLE_ARBITRAGE] is False
+    assert mock_entry.options[CONF_VAT] == 0.21
+
+
+async def test_options_flow_control(
+    hass: HomeAssistant, mock_entry: MockConfigEntry, mock_epex
+) -> None:
+    """The control path enables active steering and preserves other options."""
+    mock_entry.add_to_hass(hass)
+    assert await hass.config_entries.async_setup(mock_entry.entry_id)
+    await hass.async_block_till_done()
+
+    result = await hass.config_entries.options.async_init(mock_entry.entry_id)
+    result = await hass.config_entries.options.async_configure(
+        result["flow_id"], {"next_step_id": "control"}
+    )
+    assert result["step_id"] == "control"
+
+    user_input = {
+        **result["data_schema"]({}),
+        CONF_CONTROL_MODE: CONTROL_ACTIVE,
+        CONF_BATTERY_POWER_CONTROL_ENTITY: "number.battery_power",
+    }
+    result = await hass.config_entries.options.async_configure(
+        result["flow_id"], user_input
+    )
+    await hass.async_block_till_done()
+
+    assert result["type"] is FlowResultType.CREATE_ENTRY
+    assert mock_entry.options[CONF_CONTROL_MODE] == CONTROL_ACTIVE
+    assert (
+        mock_entry.options[CONF_BATTERY_POWER_CONTROL_ENTITY] == "number.battery_power"
+    )
     assert mock_entry.options[CONF_VAT] == 0.21
