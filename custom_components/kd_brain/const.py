@@ -34,6 +34,13 @@ CONF_LOAD_POWER_ENTITY: Final = "load_power_entity"
 CONF_BATTERY_SOC_ENTITIES: Final = "battery_soc_entities"
 CONF_BATTERY_POWER_ENTITIES: Final = "battery_power_entities"
 CONF_BATTERY_CAPACITY_WH: Final = "battery_capacity_wh"
+CONF_IMBALANCE_PRICE_ENTITY: Final = "imbalance_price_entity"
+CONF_IMBALANCE_UNIT: Final = "imbalance_unit"
+
+# Imbalance price unit of the source entity.
+IMBALANCE_UNIT_KWH: Final = "eur_kwh"
+IMBALANCE_UNIT_MWH: Final = "eur_mwh"
+DEFAULT_IMBALANCE_UNIT: Final = IMBALANCE_UNIT_KWH
 
 # --- Engine: strategies, economics & battery limits (M3) ------------------
 CONF_ENABLE_SELF_CONSUMPTION: Final = "enable_self_consumption"

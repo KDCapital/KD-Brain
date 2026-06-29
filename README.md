@@ -42,7 +42,7 @@ beslissing zien **waarom** die genomen is.
 | Mijlpaal | Inhoud |
 | --- | --- |
 | **M1** ✅ | Foundation + prijzen |
-| **M2** 🟡 | Telemetrie via entity-adapters (HomeWizard P1, Growatt, Marstek) + SystemState (onbalans volgt) |
+| **M2** ✅ | Telemetrie via entity-adapters (HomeWizard P1, Growatt, Marstek) + SystemState + onbalansprijzen |
 | **M3** ✅ | Optimalisatie-engine + 3 strategieën + uitlegbare beslissing (observe-only) |
 | M4 | Safety layer + actuators (echte sturing, opt-in) |
 | M5 | Peak shaving, MILP-arbitrage, PV/weer-forecast, NL-regelgeving 2026/2027/2029 |

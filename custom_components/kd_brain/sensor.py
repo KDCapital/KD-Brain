@@ -25,6 +25,7 @@ from .const import (
     CONF_BATTERY_POWER_ENTITIES,
     CONF_BATTERY_SOC_ENTITIES,
     CONF_GRID_POWER_ENTITY,
+    CONF_IMBALANCE_PRICE_ENTITY,
     CONF_LOAD_POWER_ENTITY,
     CONF_PRICE_INTERVAL,
     CONF_PV_POWER_ENTITY,
@@ -308,6 +309,19 @@ TELEMETRY_SENSORS: tuple[KDBrainTelemetrySensorDescription, ...] = (
         state_class=SensorStateClass.MEASUREMENT,
         value_fn=lambda t: _round1(t.battery_power_total()),
         required_keys=(CONF_BATTERY_SOC_ENTITIES, CONF_BATTERY_POWER_ENTITIES),
+    ),
+    KDBrainTelemetrySensorDescription(
+        key="imbalance_price",
+        translation_key="imbalance_price",
+        native_unit_of_measurement=CURRENCY_PER_KWH,
+        state_class=SensorStateClass.MEASUREMENT,
+        suggested_display_precision=PRICE_PRECISION,
+        value_fn=lambda t: (
+            None
+            if t.imbalance_price is None
+            else round(t.imbalance_price, PRICE_PRECISION)
+        ),
+        required_keys=(CONF_IMBALANCE_PRICE_ENTITY,),
     ),
 )
 

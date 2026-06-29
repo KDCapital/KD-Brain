@@ -181,6 +181,7 @@ class Telemetry:
     pv: PvState = PvState()
     batteries: tuple[BatteryState, ...] = ()
     load: LoadState = LoadState()
+    imbalance_price: float | None = None  # current imbalance price, €/kWh
 
     def battery_soc_average(self) -> float | None:
         """Return the mean state of charge across batteries, if known."""
@@ -223,6 +224,7 @@ class Telemetry:
             "battery_capacity_total_wh": self.battery_capacity_total(),
             "load_power_w": load_w,
             "load_derived": load_derived,
+            "imbalance_price": self.imbalance_price,
             "batteries": [
                 {
                     "soc": b.soc,

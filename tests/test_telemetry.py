@@ -11,6 +11,7 @@ from custom_components.kd_brain.const import (
     CONF_BATTERY_POWER_ENTITIES,
     CONF_BATTERY_SOC_ENTITIES,
     CONF_GRID_POWER_ENTITY,
+    CONF_IMBALANCE_PRICE_ENTITY,
     CONF_PV_POWER_ENTITY,
     DOMAIN,
 )
@@ -88,3 +89,26 @@ async def test_no_telemetry_sensors_when_unconfigured(
         )
         is None
     )
+
+
+async def test_imbalance_price_sensor(hass: HomeAssistant, mock_epex) -> None:
+    """The imbalance price sensor reports the configured entity's value."""
+    hass.states.async_set(
+        "sensor.kd_imbalance", "0.18", {"unit_of_measurement": "€/kWh"}
+    )
+    entry = MockConfigEntry(
+        domain=DOMAIN,
+        title="KD Brain",
+        data={},
+        options={**OPTIONS, CONF_IMBALANCE_PRICE_ENTITY: "sensor.kd_imbalance"},
+    )
+    entry.add_to_hass(hass)
+    assert await hass.config_entries.async_setup(entry.entry_id)
+    await hass.async_block_till_done()
+
+    ent_reg = er.async_get(hass)
+    entity_id = ent_reg.async_get_entity_id(
+        "sensor", DOMAIN, f"{entry.entry_id}_imbalance_price"
+    )
+    assert entity_id is not None
+    assert float(hass.states.get(entity_id).state) == 0.18  # type: ignore[union-attr]

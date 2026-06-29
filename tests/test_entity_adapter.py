@@ -9,7 +9,10 @@ from custom_components.kd_brain.const import (
     CONF_BATTERY_POWER_ENTITIES,
     CONF_BATTERY_SOC_ENTITIES,
     CONF_GRID_POWER_ENTITY,
+    CONF_IMBALANCE_PRICE_ENTITY,
+    CONF_IMBALANCE_UNIT,
     CONF_PV_POWER_ENTITY,
+    IMBALANCE_UNIT_MWH,
 )
 from custom_components.kd_brain.data.adapters.entity_adapter import EntityAdapter
 
@@ -71,8 +74,33 @@ def test_entity_ids_and_is_configured() -> None:
         {
             CONF_GRID_POWER_ENTITY: "sensor.grid",
             CONF_BATTERY_SOC_ENTITIES: ["sensor.a", "sensor.b"],
+            CONF_IMBALANCE_PRICE_ENTITY: "sensor.imbalance",
         }
     )
-    assert set(adapter.entity_ids) == {"sensor.grid", "sensor.a", "sensor.b"}
+    assert set(adapter.entity_ids) == {
+        "sensor.grid",
+        "sensor.a",
+        "sensor.b",
+        "sensor.imbalance",
+    }
     assert adapter.is_configured
     assert not EntityAdapter({}).is_configured
+
+
+async def test_imbalance_price_kwh(hass: HomeAssistant) -> None:
+    """An imbalance price already in €/kWh is read as-is (and may be negative)."""
+    hass.states.async_set("sensor.imb", "-0.05", {"unit_of_measurement": "€/kWh"})
+    adapter = EntityAdapter({CONF_IMBALANCE_PRICE_ENTITY: "sensor.imb"})
+    assert adapter.read(hass).imbalance_price == -0.05
+
+
+async def test_imbalance_price_mwh_conversion(hass: HomeAssistant) -> None:
+    """An imbalance price in €/MWh is converted to €/kWh."""
+    hass.states.async_set("sensor.imb", "120", {"unit_of_measurement": "€/MWh"})
+    adapter = EntityAdapter(
+        {
+            CONF_IMBALANCE_PRICE_ENTITY: "sensor.imb",
+            CONF_IMBALANCE_UNIT: IMBALANCE_UNIT_MWH,
+        }
+    )
+    assert adapter.read(hass).imbalance_price == 0.12  # 120 €/MWh -> 0.12 €/kWh

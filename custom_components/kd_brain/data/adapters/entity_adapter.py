@@ -23,9 +23,13 @@ from ...const import (
     CONF_BATTERY_POWER_ENTITIES,
     CONF_BATTERY_SOC_ENTITIES,
     CONF_GRID_POWER_ENTITY,
+    CONF_IMBALANCE_PRICE_ENTITY,
+    CONF_IMBALANCE_UNIT,
     CONF_LOAD_POWER_ENTITY,
     CONF_PV_POWER_ENTITY,
     DEFAULT_BATTERY_CAPACITY_WH,
+    DEFAULT_IMBALANCE_UNIT,
+    IMBALANCE_UNIT_MWH,
 )
 from ..models import BatteryState, GridState, LoadState, PvState, Telemetry
 
@@ -54,11 +58,22 @@ class EntityAdapter:
         self._capacity = int(
             options.get(CONF_BATTERY_CAPACITY_WH) or DEFAULT_BATTERY_CAPACITY_WH
         )
+        self._imbalance = options.get(CONF_IMBALANCE_PRICE_ENTITY)
+        self._imbalance_unit = (
+            options.get(CONF_IMBALANCE_UNIT) or DEFAULT_IMBALANCE_UNIT
+        )
 
     @property
     def entity_ids(self) -> list[str]:
         """Return every source entity id, for state-change tracking."""
-        ids = [self._grid, self._pv, self._load, *self._soc, *self._power]
+        ids = [
+            self._grid,
+            self._pv,
+            self._load,
+            self._imbalance,
+            *self._soc,
+            *self._power,
+        ]
         return [entity_id for entity_id in ids if entity_id]
 
     @property
@@ -73,7 +88,17 @@ class EntityAdapter:
             pv=PvState(power_w=self._power_w(hass, self._pv)),
             batteries=self._batteries(hass),
             load=LoadState(power_w=self._power_w(hass, self._load)),
+            imbalance_price=self._imbalance_price(hass),
         )
+
+    def _imbalance_price(self, hass: HomeAssistant) -> float | None:
+        """Return the imbalance price in €/kWh, converting from €/MWh if set."""
+        value = self._numeric(hass, self._imbalance)
+        if value is None:
+            return None
+        if self._imbalance_unit == IMBALANCE_UNIT_MWH:
+            return value / 1000.0
+        return value
 
     def _batteries(self, hass: HomeAssistant) -> tuple[BatteryState, ...]:
         """Build one battery state per configured SOC/power entity."""

@@ -43,6 +43,8 @@ from .const import (
     CONF_ENERGY_TAX,
     CONF_FEED_IN_MARKUP,
     CONF_GRID_POWER_ENTITY,
+    CONF_IMBALANCE_PRICE_ENTITY,
+    CONF_IMBALANCE_UNIT,
     CONF_LOAD_POWER_ENTITY,
     CONF_MAX_CHARGE_POWER_W,
     CONF_MAX_DISCHARGE_POWER_W,
@@ -66,6 +68,7 @@ from .const import (
     DEFAULT_ENABLE_SELF_CONSUMPTION,
     DEFAULT_ENERGY_TAX,
     DEFAULT_FEED_IN_MARKUP,
+    DEFAULT_IMBALANCE_UNIT,
     DEFAULT_MAX_CHARGE_POWER_W,
     DEFAULT_MAX_DISCHARGE_POWER_W,
     DEFAULT_MONTHLY_FEE,
@@ -78,6 +81,8 @@ from .const import (
     DEFAULT_UPDATE_INTERVAL_MINUTES,
     DEFAULT_VAT,
     DOMAIN,
+    IMBALANCE_UNIT_KWH,
+    IMBALANCE_UNIT_MWH,
     INTERVAL_HOURLY,
     INTERVAL_QUARTERLY,
     MAX_UPDATE_INTERVAL_MINUTES,
@@ -93,6 +98,7 @@ _DEVICE_ENTITY_KEYS = (
     CONF_LOAD_POWER_ENTITY,
     CONF_BATTERY_SOC_ENTITIES,
     CONF_BATTERY_POWER_ENTITIES,
+    CONF_IMBALANCE_PRICE_ENTITY,
 )
 
 TITLE = "KD Brain"
@@ -277,6 +283,20 @@ def _devices_schema(values: Mapping[str, Any]) -> vol.Schema:
                     step=100,
                     mode=NumberSelectorMode.BOX,
                     unit_of_measurement="Wh",
+                )
+            ),
+            vol.Optional(
+                CONF_IMBALANCE_PRICE_ENTITY,
+                description=suggest(CONF_IMBALANCE_PRICE_ENTITY),
+            ): _power_entity(),
+            vol.Required(
+                CONF_IMBALANCE_UNIT,
+                default=values.get(CONF_IMBALANCE_UNIT, DEFAULT_IMBALANCE_UNIT),
+            ): SelectSelector(
+                SelectSelectorConfig(
+                    options=[IMBALANCE_UNIT_KWH, IMBALANCE_UNIT_MWH],
+                    translation_key="imbalance_unit",
+                    mode=SelectSelectorMode.DROPDOWN,
                 )
             ),
         }
@@ -477,6 +497,9 @@ class KDBrainOptionsFlow(OptionsFlow):
                 saved[key] = user_input.get(key)
             saved[CONF_BATTERY_CAPACITY_WH] = user_input.get(
                 CONF_BATTERY_CAPACITY_WH, DEFAULT_BATTERY_CAPACITY_WH
+            )
+            saved[CONF_IMBALANCE_UNIT] = user_input.get(
+                CONF_IMBALANCE_UNIT, DEFAULT_IMBALANCE_UNIT
             )
             return self.async_create_entry(title="", data=saved)
         return self.async_show_form(

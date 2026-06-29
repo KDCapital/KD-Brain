@@ -24,6 +24,14 @@ All notable changes to KD Brain are documented in this file. The format is based
 - KD Brain stays **observe-only**: it recommends, it does not yet control hardware (that is M4).
 - Decision included in diagnostics.
 
+### Added — M2: Imbalance (onbalans) prices
+- Imbalance price support via the entity-adapter pattern: point KD Brain at an existing Home
+  Assistant imbalance-price sensor (€/kWh or €/MWh, auto-converted) in the Devices step. It is
+  read into the telemetry snapshot/`SystemState` and exposed as an "Imbalance price" sensor.
+- A native TenneT source is intentionally not bundled: the official feed now requires a developer
+  API key and there is no stable free no-auth endpoint, so reusing an existing HA entity is the
+  robust, no-credentials choice. (A keyed native source can be added later, like ENTSO-E.)
+
 ### Added — M2: Telemetry & state
 - Telemetry layer using the entity-adapter pattern: KD Brain reads existing Home Assistant
   entities (HomeWizard P1, Growatt, Marstek, ...) instead of duplicating those integrations.

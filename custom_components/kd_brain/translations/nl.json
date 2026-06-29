@@ -64,7 +64,9 @@
           "load_power_entity": "Huishoudelijk verbruik (optioneel; afgeleid indien leeg)",
           "battery_soc_entities": "Batterij-laadtoestand sensor(en)",
           "battery_power_entities": "Batterij-vermogen sensor(en) (+ opladen)",
-          "battery_capacity_wh": "Batterijcapaciteit per stuk"
+          "battery_capacity_wh": "Batterijcapaciteit per stuk",
+          "imbalance_price_entity": "Onbalansprijs-sensor (optioneel)",
+          "imbalance_unit": "Eenheid onbalansprijs"
         }
       },
       "supplier": {
@@ -102,6 +104,12 @@
         "hourly": "Per uur",
         "quarterly": "Per kwartier (15 min)"
       }
+    },
+    "imbalance_unit": {
+      "options": {
+        "eur_kwh": "€/kWh",
+        "eur_mwh": "€/MWh"
+      }
     }
   },
   "entity": {
@@ -119,6 +127,7 @@
       "load_power": { "name": "Huishoudelijk verbruik" },
       "battery_soc": { "name": "Batterij-laadtoestand" },
       "battery_power": { "name": "Batterijvermogen" },
+      "imbalance_price": { "name": "Onbalansprijs" },
       "recommended_action": {
         "name": "Aanbevolen actie",
         "state": {
