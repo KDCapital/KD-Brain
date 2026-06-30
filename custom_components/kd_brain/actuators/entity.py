@@ -39,8 +39,8 @@ class EntityActuator:
         return bool(self._entity_id)
 
     async def async_apply(self, hass: HomeAssistant, signed_w: int) -> None:
-        """Set the control entity to the signed power."""
-        _LOGGER.debug("Setting %s to %d W", self._entity_id, signed_w)
+        """Set the control entity to the given value (watts or amps)."""
+        _LOGGER.debug("Setting %s to %d", self._entity_id, signed_w)
         await hass.services.async_call(
             NUMBER_DOMAIN,
             _SERVICE_SET_VALUE,

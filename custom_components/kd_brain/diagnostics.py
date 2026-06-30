@@ -48,6 +48,7 @@ async def async_get_config_entry_diagnostics(
     optimization = entry.runtime_data.optimization_coordinator
     decision = optimization.data
     actuation = entry.runtime_data.actuation_coordinator.data
+    ev = entry.runtime_data.ev_coordinator.data
 
     return {
         "entry": {
@@ -68,4 +69,5 @@ async def async_get_config_entry_diagnostics(
         "decision": decision.as_dict() if decision is not None else None,
         "actuation": actuation.as_dict() if actuation is not None else None,
         "forecast": optimization.forecast.as_dict(),
+        "ev": ev.as_dict() if ev is not None else None,
     }

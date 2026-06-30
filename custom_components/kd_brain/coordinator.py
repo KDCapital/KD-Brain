@@ -20,6 +20,7 @@ from homeassistant.helpers.update_coordinator import DataUpdateCoordinator, Upda
 from homeassistant.util import dt as dt_util
 
 from .actuators.base import ActuationResult
+from .actuators.entity import EntityActuator
 from .actuators.registry import build_actuator
 from .const import (
     CONF_PRICE_SOURCE,
@@ -48,6 +49,9 @@ from .engine.forecaster import build_forecaster
 from .engine.milp import MilpUnavailableError, milp_optimize
 from .engine.optimizer import optimize
 from .engine.state import build_system_state
+from .ev.config import EvConfig
+from .ev.planner import EvResult, plan_ev
+from .ev.safety import ev_safety
 from .safety.config import SafetyConfig
 from .safety.gate import evaluate
 from .safety.state import ControlState
@@ -345,4 +349,88 @@ class KDBrainActuationCoordinator(DataUpdateCoordinator[ActuationResult | None])
     @callback
     def _handle_upstream(self) -> None:
         """Schedule an actuation pass on a new decision."""
+        self.hass.async_create_task(self.async_request_refresh())
+
+
+class KDBrainEvCoordinator(DataUpdateCoordinator[EvResult | None]):
+    """Plans EV charging and (in active mode) sets the charge current.
+
+    Mirrors the battery actuation pipeline but for an EV charger: it picks a
+    charge current from prices, solar surplus and the target SOC, applies the
+    IEC 61851 and anti-oscillation safety clamps, and writes the current to the
+    configured control entity only in active mode.
+    """
+
+    def __init__(
+        self,
+        hass: HomeAssistant,
+        entry: ConfigEntry,
+        price_coordinator: KDBrainPriceCoordinator,
+        telemetry_coordinator: KDBrainTelemetryCoordinator,
+    ) -> None:
+        """Initialise from the price and telemetry coordinators."""
+        super().__init__(
+            hass,
+            _LOGGER,
+            name=f"{DOMAIN}_ev",
+            update_interval=None,
+            config_entry=entry,
+        )
+        self._price = price_coordinator
+        self._telemetry = telemetry_coordinator
+        self._control_state = ControlState()
+        config = EvConfig.from_options(dict(entry.options))
+        self._actuator = (
+            EntityActuator(config.control_entity) if config.control_entity else None
+        )
+
+    @property
+    def ev_config(self) -> EvConfig:
+        """Return the EV config built from the current entry options."""
+        assert self.config_entry is not None
+        return EvConfig.from_options(dict(self.config_entry.options))
+
+    async def _async_update_data(self) -> EvResult | None:
+        """Plan EV charging and apply it when active."""
+        config = self.ev_config
+        if not config.enabled:
+            return None
+        prices = self._price.data
+        if prices is None or prices.is_empty:
+            return None
+        telemetry = self._telemetry.data or Telemetry()
+        now = dt_util.utcnow()
+        state = build_system_state(now, prices, telemetry)
+
+        plan = plan_ev(state, config)
+        current, write, reasons = ev_safety(
+            plan.current_a, config, self._control_state, now
+        )
+
+        written = False
+        if config.is_active and self._actuator is not None and write:
+            await self._actuator.async_apply(self.hass, current)
+            self._control_state.record(current, now)
+            written = True
+
+        return EvResult(
+            ts=now,
+            mode=config.control_mode,
+            connected=telemetry.ev.connected,
+            current_a=current,
+            written=written,
+            reasons=(plan.reason, *reasons),
+        )
+
+    @callback
+    def async_setup_listeners(self) -> list[CALLBACK_TYPE]:
+        """Re-plan whenever prices or telemetry update."""
+        return [
+            self._price.async_add_listener(self._handle_upstream),
+            self._telemetry.async_add_listener(self._handle_upstream),
+        ]
+
+    @callback
+    def _handle_upstream(self) -> None:
+        """Schedule an EV planning pass on an upstream update."""
         self.hass.async_create_task(self.async_request_refresh())

@@ -5,20 +5,28 @@ from __future__ import annotations
 from decimal import Decimal
 from typing import Any
 
-from homeassistant.components.binary_sensor import BinarySensorEntity
+from homeassistant.components.binary_sensor import (
+    BinarySensorDeviceClass,
+    BinarySensorEntity,
+)
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
 from homeassistant.util import dt as dt_util
 
 from . import KDBrainConfigEntry
 from .const import (
+    CONF_ENABLE_EV,
     CONF_PRICE_LOW_THRESHOLD,
     DEFAULT_PRICE_LOW_THRESHOLD,
     PRICE_PRECISION,
 )
-from .coordinator import KDBrainActuationCoordinator, KDBrainPriceCoordinator
+from .coordinator import (
+    KDBrainActuationCoordinator,
+    KDBrainEvCoordinator,
+    KDBrainPriceCoordinator,
+)
 from .data.models import PricePoint
-from .entity import KDBrainActuationEntity, KDBrainPriceEntity
+from .entity import KDBrainActuationEntity, KDBrainEvEntity, KDBrainPriceEntity
 
 
 async def async_setup_entry(
@@ -28,13 +36,14 @@ async def async_setup_entry(
 ) -> None:
     """Set up KD Brain binary sensors."""
     runtime = entry.runtime_data
-    async_add_entities(
-        [
-            KDBrainPriceLowBinarySensor(runtime.price_coordinator),
-            KDBrainActiveControlBinarySensor(runtime.actuation_coordinator),
-            KDBrainSafetyInterventionBinarySensor(runtime.actuation_coordinator),
-        ]
-    )
+    entities: list[BinarySensorEntity] = [
+        KDBrainPriceLowBinarySensor(runtime.price_coordinator),
+        KDBrainActiveControlBinarySensor(runtime.actuation_coordinator),
+        KDBrainSafetyInterventionBinarySensor(runtime.actuation_coordinator),
+    ]
+    if entry.options.get(CONF_ENABLE_EV):
+        entities.append(KDBrainEvConnectedBinarySensor(runtime.ev_coordinator))
+    async_add_entities(entities)
 
 
 class KDBrainPriceLowBinarySensor(KDBrainPriceEntity, BinarySensorEntity):
@@ -111,3 +120,20 @@ class KDBrainSafetyInterventionBinarySensor(KDBrainActuationEntity, BinarySensor
         """Expose the safety reasons."""
         result = self.coordinator.data
         return None if result is None else {"reasons": list(result.outcome.reasons)}
+
+
+class KDBrainEvConnectedBinarySensor(KDBrainEvEntity, BinarySensorEntity):
+    """Whether an EV is connected to the charger."""
+
+    _attr_translation_key = "ev_connected"
+    _attr_device_class = BinarySensorDeviceClass.PLUG
+
+    def __init__(self, coordinator: KDBrainEvCoordinator) -> None:
+        """Initialise the binary sensor."""
+        super().__init__(coordinator, "ev_connected")
+
+    @property
+    def is_on(self) -> bool | None:
+        """Return whether the EV is connected."""
+        result = self.coordinator.data
+        return None if result is None else result.connected

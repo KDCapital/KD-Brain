@@ -43,9 +43,18 @@ from .const import (
     CONF_ENABLE_ARBITRAGE,
     CONF_ENABLE_BACKUP_RESERVE,
     CONF_ENABLE_DYNAMIC_PRICING,
+    CONF_ENABLE_EV,
     CONF_ENABLE_PEAK_SHAVING,
     CONF_ENABLE_SELF_CONSUMPTION,
     CONF_ENERGY_TAX,
+    CONF_EV_CONNECTED_ENTITY,
+    CONF_EV_CURRENT_CONTROL_ENTITY,
+    CONF_EV_MAX_CURRENT_A,
+    CONF_EV_MIN_CURRENT_A,
+    CONF_EV_PHASES,
+    CONF_EV_POWER_ENTITY,
+    CONF_EV_SOC_ENTITY,
+    CONF_EV_TARGET_SOC,
     CONF_FEED_IN_MARKUP,
     CONF_GRID_POWER_ENTITY,
     CONF_HYSTERESIS_W,
@@ -84,9 +93,14 @@ from .const import (
     DEFAULT_ENABLE_ARBITRAGE,
     DEFAULT_ENABLE_BACKUP_RESERVE,
     DEFAULT_ENABLE_DYNAMIC_PRICING,
+    DEFAULT_ENABLE_EV,
     DEFAULT_ENABLE_PEAK_SHAVING,
     DEFAULT_ENABLE_SELF_CONSUMPTION,
     DEFAULT_ENERGY_TAX,
+    DEFAULT_EV_MAX_CURRENT_A,
+    DEFAULT_EV_MIN_CURRENT_A,
+    DEFAULT_EV_PHASES,
+    DEFAULT_EV_TARGET_SOC,
     DEFAULT_FEED_IN_MARKUP,
     DEFAULT_HYSTERESIS_W,
     DEFAULT_IMBALANCE_UNIT,
@@ -133,6 +147,9 @@ _DEVICE_ENTITY_KEYS = (
     CONF_IMBALANCE_PRICE_ENTITY,
     CONF_PV_FORECAST_POWER_ENTITY,
     CONF_PV_FORECAST_TODAY_ENTITY,
+    CONF_EV_CONNECTED_ENTITY,
+    CONF_EV_POWER_ENTITY,
+    CONF_EV_SOC_ENTITY,
 )
 
 TITLE = "KD Brain"
@@ -342,6 +359,16 @@ def _devices_schema(values: Mapping[str, Any]) -> vol.Schema:
                 description=suggest(CONF_PV_FORECAST_TODAY_ENTITY),
             ): _power_entity(),
             vol.Optional(
+                CONF_EV_CONNECTED_ENTITY,
+                description=suggest(CONF_EV_CONNECTED_ENTITY),
+            ): EntitySelector(EntitySelectorConfig()),
+            vol.Optional(
+                CONF_EV_POWER_ENTITY, description=suggest(CONF_EV_POWER_ENTITY)
+            ): _power_entity(),
+            vol.Optional(
+                CONF_EV_SOC_ENTITY, description=suggest(CONF_EV_SOC_ENTITY)
+            ): _power_entity(),
+            vol.Optional(
                 CONF_IMBALANCE_PRICE_ENTITY,
                 description=suggest(CONF_IMBALANCE_PRICE_ENTITY),
             ): _power_entity(),
@@ -538,6 +565,49 @@ def _control_schema(values: Mapping[str, Any]) -> vol.Schema:
     )
 
 
+def _amps() -> NumberSelector:
+    """Return an ampere number selector for EV charge current."""
+    return NumberSelector(
+        NumberSelectorConfig(
+            min=6, max=32, step=1, mode=NumberSelectorMode.BOX, unit_of_measurement="A"
+        )
+    )
+
+
+def _ev_schema(values: Mapping[str, Any]) -> vol.Schema:
+    """Build the EV smart-charging schema, pre-filled with ``values``."""
+    return vol.Schema(
+        {
+            vol.Required(
+                CONF_ENABLE_EV, default=values.get(CONF_ENABLE_EV, DEFAULT_ENABLE_EV)
+            ): BooleanSelector(),
+            vol.Optional(
+                CONF_EV_CURRENT_CONTROL_ENTITY,
+                description={
+                    "suggested_value": values.get(CONF_EV_CURRENT_CONTROL_ENTITY)
+                },
+            ): EntitySelector(EntitySelectorConfig(domain="number")),
+            vol.Required(
+                CONF_EV_MIN_CURRENT_A,
+                default=values.get(CONF_EV_MIN_CURRENT_A, DEFAULT_EV_MIN_CURRENT_A),
+            ): _amps(),
+            vol.Required(
+                CONF_EV_MAX_CURRENT_A,
+                default=values.get(CONF_EV_MAX_CURRENT_A, DEFAULT_EV_MAX_CURRENT_A),
+            ): _amps(),
+            vol.Required(
+                CONF_EV_PHASES, default=values.get(CONF_EV_PHASES, DEFAULT_EV_PHASES)
+            ): NumberSelector(
+                NumberSelectorConfig(min=1, max=3, step=1, mode=NumberSelectorMode.BOX)
+            ),
+            vol.Required(
+                CONF_EV_TARGET_SOC,
+                default=values.get(CONF_EV_TARGET_SOC, DEFAULT_EV_TARGET_SOC),
+            ): _percent(),
+        }
+    )
+
+
 class KDBrainConfigFlow(ConfigFlow, domain=DOMAIN):
     """Handle the initial setup of KD Brain."""
 
@@ -588,10 +658,17 @@ class KDBrainOptionsFlow(OptionsFlow):
     async def async_step_init(
         self, user_input: dict[str, Any] | None = None
     ) -> ConfigFlowResult:
-        """Offer supplier, tariff, devices, strategy or control configuration."""
+        """Offer supplier, tariff, devices, strategy, control or EV setup."""
         return self.async_show_menu(
             step_id="init",
-            menu_options=["supplier", "manual", "devices", "strategy", "control"],
+            menu_options=[
+                "supplier",
+                "manual",
+                "devices",
+                "strategy",
+                "control",
+                "ev",
+            ],
         )
 
     async def async_step_supplier(
@@ -682,4 +759,18 @@ class KDBrainOptionsFlow(OptionsFlow):
         return self.async_show_form(
             step_id="control",
             data_schema=_control_schema(self.config_entry.options),
+        )
+
+    async def async_step_ev(
+        self, user_input: dict[str, Any] | None = None
+    ) -> ConfigFlowResult:
+        """Configure EV smart charging."""
+        if user_input is not None:
+            saved = {**self.config_entry.options, **user_input}
+            saved[CONF_EV_CURRENT_CONTROL_ENTITY] = user_input.get(
+                CONF_EV_CURRENT_CONTROL_ENTITY
+            )
+            return self.async_create_entry(title="", data=saved)
+        return self.async_show_form(
+            step_id="ev", data_schema=_ev_schema(self.config_entry.options)
         )

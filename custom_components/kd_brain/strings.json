@@ -38,7 +38,20 @@
           "manual": "Edit values manually",
           "devices": "Configure devices (telemetry)",
           "strategy": "Strategies, economics & battery limits",
-          "control": "Control & safety"
+          "control": "Control & safety",
+          "ev": "EV smart charging"
+        }
+      },
+      "ev": {
+        "title": "EV smart charging",
+        "description": "Charge the EV on cheap prices and solar surplus, up to a target SOC. IEC 61851 is enforced (current is 0 or at least the minimum, never in between). Steering happens only in active control mode.",
+        "data": {
+          "enable_ev": "Enable EV smart charging",
+          "ev_current_control_entity": "EV charge-current control entity (A)",
+          "ev_min_current_a": "Minimum charge current",
+          "ev_max_current_a": "Maximum charge current",
+          "ev_phases": "Number of phases",
+          "ev_target_soc": "Target state of charge"
         }
       },
       "control": {
@@ -86,6 +99,9 @@
           "battery_capacity_wh": "Battery capacity per unit",
           "pv_forecast_power_entity": "PV forecast power sensor (e.g. next hour)",
           "pv_forecast_today_entity": "PV forecast energy today sensor",
+          "ev_connected_entity": "EV connected sensor (optional)",
+          "ev_power_entity": "EV charging power sensor (optional)",
+          "ev_soc_entity": "EV state-of-charge sensor (optional)",
           "imbalance_price_entity": "Imbalance price sensor (optional)",
           "imbalance_unit": "Imbalance price unit"
         }
@@ -180,12 +196,14 @@
         }
       },
       "active_strategy": { "name": "Active strategy" },
-      "last_actuation": { "name": "Last actuation" }
+      "last_actuation": { "name": "Last actuation" },
+      "recommended_ev_current": { "name": "Recommended EV current" }
     },
     "binary_sensor": {
       "price_low": { "name": "Price is low" },
       "active_control": { "name": "Active control" },
-      "safety_intervened": { "name": "Safety intervened" }
+      "safety_intervened": { "name": "Safety intervened" },
+      "ev_connected": { "name": "EV connected" }
     }
   },
   "services": {

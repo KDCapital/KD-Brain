@@ -8,6 +8,7 @@ from homeassistant.helpers.update_coordinator import CoordinatorEntity
 from .const import DOMAIN, MANUFACTURER, MODEL
 from .coordinator import (
     KDBrainActuationCoordinator,
+    KDBrainEvCoordinator,
     KDBrainOptimizationCoordinator,
     KDBrainPriceCoordinator,
     KDBrainTelemetryCoordinator,
@@ -77,6 +78,20 @@ class KDBrainActuationEntity(CoordinatorEntity[KDBrainActuationCoordinator]):
     _attr_has_entity_name = True
 
     def __init__(self, coordinator: KDBrainActuationCoordinator, key: str) -> None:
+        """Initialise the entity with a stable unique id and device."""
+        super().__init__(coordinator)
+        assert coordinator.config_entry is not None
+        entry_id = coordinator.config_entry.entry_id
+        self._attr_unique_id = f"{entry_id}_{key}"
+        self._attr_device_info = kd_brain_device_info(entry_id)
+
+
+class KDBrainEvEntity(CoordinatorEntity[KDBrainEvCoordinator]):
+    """Base class for entities backed by the EV coordinator."""
+
+    _attr_has_entity_name = True
+
+    def __init__(self, coordinator: KDBrainEvCoordinator, key: str) -> None:
         """Initialise the entity with a stable unique id and device."""
         super().__init__(coordinator)
         assert coordinator.config_entry is not None

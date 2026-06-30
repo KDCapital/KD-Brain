@@ -22,6 +22,9 @@ from ...const import (
     CONF_BATTERY_CAPACITY_WH,
     CONF_BATTERY_POWER_ENTITIES,
     CONF_BATTERY_SOC_ENTITIES,
+    CONF_EV_CONNECTED_ENTITY,
+    CONF_EV_POWER_ENTITY,
+    CONF_EV_SOC_ENTITY,
     CONF_GRID_POWER_ENTITY,
     CONF_IMBALANCE_PRICE_ENTITY,
     CONF_IMBALANCE_UNIT,
@@ -31,7 +34,17 @@ from ...const import (
     DEFAULT_IMBALANCE_UNIT,
     IMBALANCE_UNIT_MWH,
 )
-from ..models import BatteryState, GridState, LoadState, PvState, Telemetry
+from ..models import (
+    BatteryState,
+    EvState,
+    GridState,
+    LoadState,
+    PvState,
+    Telemetry,
+)
+
+_TRUE_STATES = frozenset({"on", "true", "1", "home", "connected", "charging"})
+_FALSE_STATES = frozenset({"off", "false", "0", "not_connected", "disconnected"})
 
 _POWER_TO_WATT: dict[str, float] = {"w": 1.0, "kw": 1000.0, "mw": 1_000_000.0}
 
@@ -62,6 +75,9 @@ class EntityAdapter:
         self._imbalance_unit = (
             options.get(CONF_IMBALANCE_UNIT) or DEFAULT_IMBALANCE_UNIT
         )
+        self._ev_connected = options.get(CONF_EV_CONNECTED_ENTITY)
+        self._ev_power = options.get(CONF_EV_POWER_ENTITY)
+        self._ev_soc = options.get(CONF_EV_SOC_ENTITY)
 
     @property
     def entity_ids(self) -> list[str]:
@@ -71,6 +87,9 @@ class EntityAdapter:
             self._pv,
             self._load,
             self._imbalance,
+            self._ev_connected,
+            self._ev_power,
+            self._ev_soc,
             *self._soc,
             *self._power,
         ]
@@ -88,8 +107,28 @@ class EntityAdapter:
             pv=PvState(power_w=self._power_w(hass, self._pv)),
             batteries=self._batteries(hass),
             load=LoadState(power_w=self._power_w(hass, self._load)),
+            ev=EvState(
+                connected=self._bool(hass, self._ev_connected),
+                charging_power_w=self._power_w(hass, self._ev_power),
+                soc=self._numeric(hass, self._ev_soc),
+            ),
             imbalance_price=self._imbalance_price(hass),
         )
+
+    @staticmethod
+    def _bool(hass: HomeAssistant, entity_id: str | None) -> bool | None:
+        """Return a boolean state, or None if unknown/unset."""
+        if not entity_id:
+            return None
+        state = hass.states.get(entity_id)
+        if state is None:
+            return None
+        value = state.state.lower()
+        if value in _TRUE_STATES:
+            return True
+        if value in _FALSE_STATES:
+            return False
+        return None
 
     def _imbalance_price(self, hass: HomeAssistant) -> float | None:
         """Return the imbalance price in €/kWh, converting from €/MWh if set."""

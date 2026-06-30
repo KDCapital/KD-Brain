@@ -14,7 +14,12 @@ from homeassistant.components.sensor import (
     SensorEntityDescription,
     SensorStateClass,
 )
-from homeassistant.const import PERCENTAGE, UnitOfEnergy, UnitOfPower
+from homeassistant.const import (
+    PERCENTAGE,
+    UnitOfElectricCurrent,
+    UnitOfEnergy,
+    UnitOfPower,
+)
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
 from homeassistant.helpers.typing import StateType
@@ -24,6 +29,7 @@ from . import KDBrainConfigEntry
 from .const import (
     CONF_BATTERY_POWER_ENTITIES,
     CONF_BATTERY_SOC_ENTITIES,
+    CONF_ENABLE_EV,
     CONF_GRID_POWER_ENTITY,
     CONF_IMBALANCE_PRICE_ENTITY,
     CONF_LOAD_POWER_ENTITY,
@@ -38,6 +44,7 @@ from .const import (
 )
 from .coordinator import (
     KDBrainActuationCoordinator,
+    KDBrainEvCoordinator,
     KDBrainOptimizationCoordinator,
     KDBrainPriceCoordinator,
     KDBrainTelemetryCoordinator,
@@ -46,6 +53,7 @@ from .data.models import PriceSeries, Telemetry
 from .engine.decision import BatteryAction
 from .entity import (
     KDBrainActuationEntity,
+    KDBrainEvEntity,
     KDBrainOptimizationEntity,
     KDBrainPriceEntity,
     KDBrainTelemetryEntity,
@@ -229,6 +237,9 @@ async def async_setup_entry(
         entities.append(KDBrainForecastPowerSensor(optimization))
     if options.get(CONF_PV_FORECAST_TODAY_ENTITY):
         entities.append(KDBrainForecastTodaySensor(optimization))
+
+    if options.get(CONF_ENABLE_EV):
+        entities.append(KDBrainEvCurrentSensor(runtime.ev_coordinator))
 
     async_add_entities(entities)
 
@@ -438,6 +449,31 @@ class KDBrainForecastTodaySensor(KDBrainOptimizationEntity, SensorEntity):
         """Return the forecast PV production for today."""
         value = self.coordinator.forecast.pv_energy_today_kwh
         return None if value is None else round(value, 2)
+
+
+class KDBrainEvCurrentSensor(KDBrainEvEntity, SensorEntity):
+    """The recommended EV charge current (with the reasoning as attributes)."""
+
+    _attr_translation_key = "recommended_ev_current"
+    _attr_device_class = SensorDeviceClass.CURRENT
+    _attr_native_unit_of_measurement = UnitOfElectricCurrent.AMPERE
+    _attr_state_class = SensorStateClass.MEASUREMENT
+
+    def __init__(self, coordinator: KDBrainEvCoordinator) -> None:
+        """Initialise the sensor."""
+        super().__init__(coordinator, "recommended_ev_current")
+
+    @property
+    def native_value(self) -> StateType:
+        """Return the recommended charge current."""
+        result = self.coordinator.data
+        return None if result is None else result.current_a
+
+    @property
+    def extra_state_attributes(self) -> dict[str, Any] | None:
+        """Expose the EV mode, whether it was written and the reasons."""
+        result = self.coordinator.data
+        return None if result is None else result.as_dict()
 
 
 class KDBrainLastActuationSensor(KDBrainActuationEntity, SensorEntity):

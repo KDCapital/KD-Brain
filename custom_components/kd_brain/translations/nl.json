@@ -38,7 +38,20 @@
           "manual": "Waarden handmatig bewerken",
           "devices": "Apparaten instellen (telemetrie)",
           "strategy": "Strategieën, economie & batterijgrenzen",
-          "control": "Sturing & veiligheid"
+          "control": "Sturing & veiligheid",
+          "ev": "EV slim laden"
+        }
+      },
+      "ev": {
+        "title": "EV slim laden",
+        "description": "Laad de EV op goedkope prijzen en zonne-overschot, tot een streef-SOC. IEC 61851 wordt afgedwongen (stroom is 0 of minimaal de minimumstroom, nooit ertussenin). Sturing gebeurt alleen in actieve modus.",
+        "data": {
+          "enable_ev": "EV slim laden inschakelen",
+          "ev_current_control_entity": "EV laadstroom-besturingsentiteit (A)",
+          "ev_min_current_a": "Minimale laadstroom",
+          "ev_max_current_a": "Maximale laadstroom",
+          "ev_phases": "Aantal fasen",
+          "ev_target_soc": "Streef-laadtoestand"
         }
       },
       "control": {
@@ -86,6 +99,9 @@
           "battery_capacity_wh": "Batterijcapaciteit per stuk",
           "pv_forecast_power_entity": "PV-voorspelling vermogen-sensor (bijv. volgend uur)",
           "pv_forecast_today_entity": "PV-voorspelling energie vandaag-sensor",
+          "ev_connected_entity": "EV-aangesloten sensor (optioneel)",
+          "ev_power_entity": "EV-laadvermogen sensor (optioneel)",
+          "ev_soc_entity": "EV-laadtoestand sensor (optioneel)",
           "imbalance_price_entity": "Onbalansprijs-sensor (optioneel)",
           "imbalance_unit": "Eenheid onbalansprijs"
         }
@@ -180,12 +196,14 @@
         }
       },
       "active_strategy": { "name": "Actieve strategie" },
-      "last_actuation": { "name": "Laatste sturing" }
+      "last_actuation": { "name": "Laatste sturing" },
+      "recommended_ev_current": { "name": "Aanbevolen EV-stroom" }
     },
     "binary_sensor": {
       "price_low": { "name": "Prijs is laag" },
       "active_control": { "name": "Actieve sturing" },
-      "safety_intervened": { "name": "Veiligheid ingegrepen" }
+      "safety_intervened": { "name": "Veiligheid ingegrepen" },
+      "ev_connected": { "name": "EV aangesloten" }
     }
   },
   "services": {

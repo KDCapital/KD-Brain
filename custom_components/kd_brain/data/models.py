@@ -174,6 +174,15 @@ class LoadState:
 
 
 @dataclass(frozen=True, slots=True)
+class EvState:
+    """Telemetry for an electric vehicle / charger."""
+
+    connected: bool | None = None
+    charging_power_w: float | None = None
+    soc: float | None = None  # vehicle state of charge, percent
+
+
+@dataclass(frozen=True, slots=True)
 class Telemetry:
     """A snapshot of all live device telemetry KD Brain can read."""
 
@@ -181,6 +190,7 @@ class Telemetry:
     pv: PvState = PvState()
     batteries: tuple[BatteryState, ...] = ()
     load: LoadState = LoadState()
+    ev: EvState = EvState()
     imbalance_price: float | None = None  # current imbalance price, €/kWh
 
     def battery_soc_average(self) -> float | None:
@@ -225,6 +235,11 @@ class Telemetry:
             "load_power_w": load_w,
             "load_derived": load_derived,
             "imbalance_price": self.imbalance_price,
+            "ev": {
+                "connected": self.ev.connected,
+                "charging_power_w": self.ev.charging_power_w,
+                "soc": self.ev.soc,
+            },
             "batteries": [
                 {
                     "soc": b.soc,

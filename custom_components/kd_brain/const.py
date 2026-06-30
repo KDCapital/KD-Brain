@@ -45,6 +45,17 @@ CONF_IMBALANCE_PRICE_ENTITY: Final = "imbalance_price_entity"
 CONF_IMBALANCE_UNIT: Final = "imbalance_unit"
 CONF_PV_FORECAST_POWER_ENTITY: Final = "pv_forecast_power_entity"
 CONF_PV_FORECAST_TODAY_ENTITY: Final = "pv_forecast_today_entity"
+CONF_EV_CONNECTED_ENTITY: Final = "ev_connected_entity"
+CONF_EV_POWER_ENTITY: Final = "ev_power_entity"
+CONF_EV_SOC_ENTITY: Final = "ev_soc_entity"
+CONF_EV_CURRENT_CONTROL_ENTITY: Final = "ev_current_control_entity"
+
+# --- EV smart charging (M6) ------------------------------------------------
+CONF_ENABLE_EV: Final = "enable_ev"
+CONF_EV_MIN_CURRENT_A: Final = "ev_min_current_a"
+CONF_EV_MAX_CURRENT_A: Final = "ev_max_current_a"
+CONF_EV_PHASES: Final = "ev_phases"
+CONF_EV_TARGET_SOC: Final = "ev_target_soc"
 
 # Imbalance price unit of the source entity.
 IMBALANCE_UNIT_KWH: Final = "eur_kwh"
@@ -122,6 +133,14 @@ DEFAULT_BATTERY_MIN_SOC: Final = 10.0  # percent
 DEFAULT_BATTERY_MAX_SOC: Final = 95.0  # percent
 DEFAULT_MAX_CHARGE_POWER_W: Final = 2500
 DEFAULT_MAX_DISCHARGE_POWER_W: Final = 2500
+
+# EV smart-charging defaults (IEC 61851: never charge below 6 A).
+DEFAULT_ENABLE_EV: Final = False
+DEFAULT_EV_MIN_CURRENT_A: Final = 6
+DEFAULT_EV_MAX_CURRENT_A: Final = 16
+DEFAULT_EV_PHASES: Final = 1
+DEFAULT_EV_TARGET_SOC: Final = 80.0  # percent
+EV_GRID_VOLTAGE: Final = 230  # V, for power<->current conversion
 
 # Control & safety defaults — observe-only until the user explicitly opts in.
 DEFAULT_CONTROL_MODE: Final = CONTROL_OBSERVE
