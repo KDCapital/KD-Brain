@@ -23,6 +23,7 @@ from ..const import (
     CONF_ENABLE_SELF_CONSUMPTION,
     CONF_MAX_CHARGE_POWER_W,
     CONF_MAX_DISCHARGE_POWER_W,
+    CONF_OPTIMIZER_MODE,
     CONF_PEAK_SHAVE_EXPORT_W,
     CONF_PEAK_SHAVE_IMPORT_W,
     CONF_ROUNDTRIP_EFFICIENCY,
@@ -38,6 +39,7 @@ from ..const import (
     DEFAULT_ENABLE_SELF_CONSUMPTION,
     DEFAULT_MAX_CHARGE_POWER_W,
     DEFAULT_MAX_DISCHARGE_POWER_W,
+    DEFAULT_OPTIMIZER_MODE,
     DEFAULT_PEAK_SHAVE_EXPORT_W,
     DEFAULT_PEAK_SHAVE_IMPORT_W,
     DEFAULT_ROUNDTRIP_EFFICIENCY,
@@ -58,6 +60,7 @@ def _decimal(value: Any, default: Decimal) -> Decimal:
 class OptimizerConfig:
     """User-tunable engine configuration."""
 
+    optimizer_mode: str
     self_consumption: bool
     dynamic_pricing: bool
     arbitrage: bool
@@ -78,6 +81,7 @@ class OptimizerConfig:
     def from_options(cls, options: dict[str, Any]) -> OptimizerConfig:
         """Build the engine config from config entry options."""
         return cls(
+            optimizer_mode=options.get(CONF_OPTIMIZER_MODE, DEFAULT_OPTIMIZER_MODE),
             self_consumption=bool(
                 options.get(
                     CONF_ENABLE_SELF_CONSUMPTION, DEFAULT_ENABLE_SELF_CONSUMPTION

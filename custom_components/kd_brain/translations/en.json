@@ -54,8 +54,9 @@
       },
       "strategy": {
         "title": "Strategies, economics & battery limits",
-        "description": "Enable strategies and set the economic parameters. Arbitrage only acts when the price spread beats degradation, round-trip losses and the safety margin. KD Brain stays observe-only in this version (recommendations only).",
+        "description": "Enable strategies and set the economic parameters. Arbitrage only acts when the price spread beats degradation, round-trip losses and the safety margin. The MILP optimiser mode requires the optional 'highspy' package.",
         "data": {
+          "optimizer_mode": "Optimiser mode",
           "enable_self_consumption": "Self-consumption strategy",
           "enable_dynamic_pricing": "Dynamic pricing strategy",
           "enable_arbitrage": "Arbitrage strategy",
@@ -144,6 +145,12 @@
         "no_saldering_2027": "2027 — no net metering",
         "capacity_2029": "2029 — no net metering + capacity tariffs"
       }
+    },
+    "optimizer_mode": {
+      "options": {
+        "heuristic": "Heuristic (default)",
+        "milp": "MILP exact (requires highspy)"
+      }
     }
   },
   "entity": {
@@ -191,6 +198,10 @@
     "price_source_unavailable": {
       "title": "KD Brain cannot reach the price source",
       "description": "KD Brain could not retrieve prices from {source}. It will keep retrying automatically; check your internet connection if this persists."
+    },
+    "milp_unavailable": {
+      "title": "KD Brain MILP optimiser unavailable",
+      "description": "You selected the MILP optimiser, but the optional 'highspy' package is not installed. KD Brain is using the heuristic optimiser instead. Install 'highspy' in Home Assistant's environment, or switch back to the heuristic mode."
     }
   }
 }

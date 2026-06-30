@@ -6,6 +6,17 @@ All notable changes to KD Brain are documented in this file. The format is based
 
 ## [Unreleased]
 
+### Added — M5: Peak shaving, regulation, forecast & optional MILP
+- Peak shaving and backup reserve strategies (opt-in).
+- NL regulation profiles (saldering 2026 / no saldering 2027 / capacity 2029) that change how
+  exported energy is valued.
+- AI-ready PV/weather forecasting interface with an entity-based default reading an external PV
+  forecast integration (e.g. Forecast.Solar).
+- Optional exact **MILP optimiser** (HiGHS via `highspy`) that solves the cost-optimal
+  charge/discharge schedule over the price horizon. Selectable per entry; **`highspy` is an
+  optional dependency** (not bundled). If MILP is selected but highspy is missing, KD Brain
+  transparently falls back to the heuristic optimiser and raises a repair.
+
 ### Added — M4: Safety layer & actuators (opt-in control)
 - Mandatory **safety gate** that every actuation passes: SOC limits (hard block), power clamp,
   anti-oscillation min-dwell, write-throttle and no-write-if-unchanged hysteresis. It can clamp to

@@ -56,6 +56,7 @@ from .const import (
     CONF_MAX_DISCHARGE_POWER_W,
     CONF_MIN_DWELL_SECONDS,
     CONF_MONTHLY_FEE,
+    CONF_OPTIMIZER_MODE,
     CONF_PEAK_SHAVE_EXPORT_W,
     CONF_PEAK_SHAVE_IMPORT_W,
     CONF_PRICE_INTERVAL,
@@ -93,6 +94,7 @@ from .const import (
     DEFAULT_MAX_DISCHARGE_POWER_W,
     DEFAULT_MIN_DWELL_SECONDS,
     DEFAULT_MONTHLY_FEE,
+    DEFAULT_OPTIMIZER_MODE,
     DEFAULT_PEAK_SHAVE_EXPORT_W,
     DEFAULT_PEAK_SHAVE_IMPORT_W,
     DEFAULT_PRICE_INTERVAL,
@@ -112,6 +114,8 @@ from .const import (
     INTERVAL_QUARTERLY,
     MAX_UPDATE_INTERVAL_MINUTES,
     MIN_UPDATE_INTERVAL_MINUTES,
+    OPTIMIZER_HEURISTIC,
+    OPTIMIZER_MILP,
     PRICE_SOURCE_EPEXPRIJZEN,
     REGULATION_CAPACITY,
     REGULATION_NO_SALDERING,
@@ -356,6 +360,7 @@ def _devices_schema(values: Mapping[str, Any]) -> vol.Schema:
 
 
 _STRATEGY_DEFAULTS: dict[str, Any] = {
+    CONF_OPTIMIZER_MODE: DEFAULT_OPTIMIZER_MODE,
     CONF_ENABLE_SELF_CONSUMPTION: DEFAULT_ENABLE_SELF_CONSUMPTION,
     CONF_ENABLE_DYNAMIC_PRICING: DEFAULT_ENABLE_DYNAMIC_PRICING,
     CONF_ENABLE_ARBITRAGE: DEFAULT_ENABLE_ARBITRAGE,
@@ -404,6 +409,15 @@ def _strategy_schema(values: Mapping[str, Any]) -> vol.Schema:
 
     return vol.Schema(
         {
+            vol.Required(
+                CONF_OPTIMIZER_MODE, default=default(CONF_OPTIMIZER_MODE)
+            ): SelectSelector(
+                SelectSelectorConfig(
+                    options=[OPTIMIZER_HEURISTIC, OPTIMIZER_MILP],
+                    translation_key="optimizer_mode",
+                    mode=SelectSelectorMode.DROPDOWN,
+                )
+            ),
             vol.Required(
                 CONF_ENABLE_SELF_CONSUMPTION,
                 default=default(CONF_ENABLE_SELF_CONSUMPTION),

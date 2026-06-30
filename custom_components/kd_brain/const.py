@@ -52,6 +52,7 @@ IMBALANCE_UNIT_MWH: Final = "eur_mwh"
 DEFAULT_IMBALANCE_UNIT: Final = IMBALANCE_UNIT_KWH
 
 # --- Engine: strategies, economics & battery limits (M3) ------------------
+CONF_OPTIMIZER_MODE: Final = "optimizer_mode"
 CONF_ENABLE_SELF_CONSUMPTION: Final = "enable_self_consumption"
 CONF_ENABLE_DYNAMIC_PRICING: Final = "enable_dynamic_pricing"
 CONF_ENABLE_ARBITRAGE: Final = "enable_arbitrage"
@@ -101,6 +102,11 @@ DEFAULT_UPDATE_INTERVAL_MINUTES: Final = 30
 DEFAULT_BATTERY_CAPACITY_WH: Final = 5000  # per battery (Marstek 5 kWh)
 
 # Engine defaults (all configurable, nothing hardcoded in the logic).
+# Optimizer mode: heuristic (default) or exact MILP (requires optional highspy).
+OPTIMIZER_HEURISTIC: Final = "heuristic"
+OPTIMIZER_MILP: Final = "milp"
+DEFAULT_OPTIMIZER_MODE: Final = OPTIMIZER_HEURISTIC
+
 DEFAULT_ENABLE_SELF_CONSUMPTION: Final = True
 DEFAULT_ENABLE_DYNAMIC_PRICING: Final = True
 DEFAULT_ENABLE_ARBITRAGE: Final = True
@@ -146,3 +152,4 @@ EVENT_ACTUATION: Final = "kd_brain_actuation"
 
 # --- Repairs issue identifiers --------------------------------------------
 ISSUE_PRICE_SOURCE_UNAVAILABLE: Final = "price_source_unavailable"
+ISSUE_MILP_UNAVAILABLE: Final = "milp_unavailable"

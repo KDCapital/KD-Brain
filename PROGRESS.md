@@ -6,7 +6,7 @@
 
 **Legenda:** ✅ klaar · 🟡 in uitvoering · ⬜ gepland · 🔒 geblokkeerd/afhankelijk
 
-**Laatst bijgewerkt:** 2026-06-28 · **Huidige release:** M4 (safety + actuators, opt-in sturing) · **Versie:** 0.4.0
+**Laatst bijgewerkt:** 2026-06-28 · **Huidige release:** M5 (peak shaving, regelgeving, forecast, optionele MILP) · **Versie:** 0.5.0
 
 ---
 
@@ -18,7 +18,7 @@
 | **M2** | Telemetrie & state | ✅ | entity-adapters (HomeWizard P1, Growatt, Marstek) + telemetrie-sensoren + `SystemState` + onbalansprijzen (via entity) |
 | **M3** | Engine + strategieën (dry-run) | ✅ | OptimizationCoordinator, economics (degradatie/roundtrip/marge), heuristische optimizer, `Decision`/uitlegbaarheid, 3 strategieën, aanbevolen-actie sensor |
 | **M4** | Safety + actuators (echte sturing) | ✅ | Safety gate (SOC/vermogen/anti-oscillatie/throttle/hysterese), entity-actuator (number.set_value), observe→active opt-in |
-| **M5** | Uitbreiding | ⬜ | Peak shaving, MILP-arbitrage (highspy), PV/weer-forecast, NL-regelgeving 2026/2027/2029 |
+| **M5** | Uitbreiding | ✅ | Peak shaving + backup-reserve, NL-regelgeving (saldering 2026/2027/2029), PV-forecast (Forecaster-interface), optionele MILP (highspy, lazy + fallback) |
 | **M6** | EV & warmtepomp | ⬜ | Strategieën + safety + actuators voor laden en warmtepomp |
 | **M7** | Dashboards + AI-ready + Gold | ⬜ | Auto-dashboards, `Forecaster`-interfaces voor ML, Quality Scale Gold |
 
@@ -61,7 +61,7 @@
 | HomeWizard P1 | telemetrie (entity-adapter) | ✅ | M2 |
 | Growatt | telemetrie (entity-adapter) ✅ / sturing (MQTT) ⬜ | 🟡 | M2/M4 |
 | Marstek 5kWh ×2 | telemetrie (entity-adapter) ✅ / sturing (Modbus) ⬜ | 🟡 | M2/M4 |
-| PV-/weersvoorspelling | forecast | ⬜ | M5 |
+| PV-/weersvoorspelling | forecast (entity) | ✅ | M5 |
 
 ### 2. Core / Energy Engine
 | Component | Status | Mijlpaal |
@@ -70,9 +70,9 @@
 | `OptimizationCoordinator` | ✅ | M3 |
 | Economisch model (degradatie/roundtrip/marge) | ✅ | M1/M3 |
 | Heuristische optimizer + cost functions | ✅ | M3 |
-| MILP-solver (highspy, optioneel) | ⬜ | M5 |
+| MILP-solver (highspy, optioneel + fallback) | ✅ | M5 |
 | `Decision`/uitlegbaarheid | ✅ | M3 |
-| `Forecaster` (AI-ready interface) | ⬜ | M3/M7 |
+| `Forecaster` (AI-ready interface) | ✅ | M5 |
 
 ### 3. Strategy Layer (plug-ins, per stuk in/uit)
 | Strategie | Status | Mijlpaal |
@@ -80,8 +80,8 @@
 | Self Consumption | ✅ | M3 |
 | Dynamic Pricing | ✅ | M3 |
 | Arbitrage | ✅ | M3 |
-| Peak Shaving | ⬜ | M5 |
-| Backup Reserve | ⬜ | M5 |
+| Peak Shaving | ✅ | M5 |
+| Backup Reserve | ✅ | M5 |
 | Solar Optimization | ⬜ | M5 |
 | Grid Support | ⬜ | M5 |
 | EV Optimization | ⬜ | M6 |
@@ -112,7 +112,7 @@
 | Device/Entity Registry | ✅ | M1 |
 | Services | 🟡 (recalculate) | M1+ |
 | Events | ✅ (prices_updated) | M1 |
-| NL-regelgeving profielen (2026/2027/2029) | ⬜ | M5 |
+| NL-regelgeving profielen (2026/2027/2029) | ✅ | M5 |
 | Auto-dashboards | ⬜ | M7 |
 | Quality Scale | 🟡 Bronze in zicht | doorlopend |
 

@@ -7,7 +7,14 @@ from homeassistant.core import HomeAssistant
 from homeassistant.helpers import entity_registry as er
 from pytest_homeassistant_custom_component.common import MockConfigEntry
 
-from custom_components.kd_brain.const import CONF_GRID_POWER_ENTITY, DOMAIN
+from custom_components.kd_brain.const import (
+    CONF_BATTERY_CAPACITY_WH,
+    CONF_BATTERY_SOC_ENTITIES,
+    CONF_GRID_POWER_ENTITY,
+    CONF_OPTIMIZER_MODE,
+    DOMAIN,
+    OPTIMIZER_MILP,
+)
 
 from .conftest import OPTIONS
 
@@ -68,3 +75,41 @@ async def test_recommended_action_idle_without_data(
         )
         assert entity_id is not None
         assert hass.states.get(entity_id).state == "idle"  # type: ignore[union-attr]
+
+
+async def test_milp_mode_produces_recommendation(
+    hass: HomeAssistant, mock_epex
+) -> None:
+    """MILP mode yields a recommendation, via highspy or the heuristic fallback.
+
+    This runs whether or not highspy is installed: if it is missing the
+    coordinator falls back to the heuristic optimiser.
+    """
+    await hass.config.async_set_time_zone("Europe/Amsterdam")
+    with freeze_time(FROZEN_TIME):
+        hass.states.async_set("sensor.kd_soc", "40", {"unit_of_measurement": "%"})
+        entry = MockConfigEntry(
+            domain=DOMAIN,
+            title="KD Brain",
+            data={},
+            options={
+                **OPTIONS,
+                CONF_OPTIMIZER_MODE: OPTIMIZER_MILP,
+                CONF_BATTERY_SOC_ENTITIES: ["sensor.kd_soc"],
+                CONF_BATTERY_CAPACITY_WH: 5000,
+            },
+        )
+        entry.add_to_hass(hass)
+        assert await hass.config_entries.async_setup(entry.entry_id)
+        await hass.async_block_till_done()
+
+        ent_reg = er.async_get(hass)
+        entity_id = ent_reg.async_get_entity_id(
+            "sensor", DOMAIN, f"{entry.entry_id}_recommended_action"
+        )
+        assert entity_id is not None
+        assert hass.states.get(entity_id).state in (  # type: ignore[union-attr]
+            "idle",
+            "charge",
+            "discharge",
+        )

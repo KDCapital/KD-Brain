@@ -1,6 +1,6 @@
 [project]
 name = "kd-brain"
-version = "0.4.0"
+version = "0.5.0"
 description = "KD Brain — open-source Home Energy Management System (HEMS) for the Netherlands, built for Home Assistant."
 readme = "README.md"
 license = { text = "MIT" }
@@ -96,6 +96,12 @@ module = "tests.*"
 disallow_untyped_defs = false
 disallow_incomplete_defs = false
 
+# highspy is an optional, unstubbed dependency loaded lazily for the MILP mode.
+[[tool.mypy.overrides]]
+module = ["highspy", "highspy.*"]
+ignore_missing_imports = true
+follow_imports = "skip"
+
 # --------------------------------------------------------------------------
 # Pylint — light config; Ruff covers most lint rules.
 # --------------------------------------------------------------------------
@@ -116,6 +122,8 @@ disable = [
   "unused-argument",          # Home Assistant framework callback signatures
   "unexpected-keyword-arg",   # false positive on inherited EntityDescription dataclasses; mypy covers this
   "abstract-method",          # ConfigFlow.is_matching is optional for non-discovery flows
+  "too-many-locals",          # math/optimisation routines (MILP) legitimately use many
+  "import-outside-toplevel",  # lazy imports of optional dependencies (highspy)
 ]
 
 [tool.pylint.format]

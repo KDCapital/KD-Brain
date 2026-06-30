@@ -54,8 +54,9 @@
       },
       "strategy": {
         "title": "Strategieën, economie & batterijgrenzen",
-        "description": "Schakel strategieën in en stel de economische parameters in. Arbitrage handelt alleen als het prijsverschil groter is dan degradatie, roundtrip-verliezen en de veiligheidsmarge. KD Brain blijft in deze versie observe-only (alleen aanbevelingen).",
+        "description": "Schakel strategieën in en stel de economische parameters in. Arbitrage handelt alleen als het prijsverschil groter is dan degradatie, roundtrip-verliezen en de veiligheidsmarge. De MILP-modus vereist het optionele pakket 'highspy'.",
         "data": {
+          "optimizer_mode": "Optimizer-modus",
           "enable_self_consumption": "Zelfverbruik-strategie",
           "enable_dynamic_pricing": "Dynamische prijzen-strategie",
           "enable_arbitrage": "Arbitrage-strategie",
@@ -144,6 +145,12 @@
         "no_saldering_2027": "2027 — geen saldering",
         "capacity_2029": "2029 — geen saldering + capaciteitstarieven"
       }
+    },
+    "optimizer_mode": {
+      "options": {
+        "heuristic": "Heuristisch (standaard)",
+        "milp": "MILP exact (vereist highspy)"
+      }
     }
   },
   "entity": {
@@ -191,6 +198,10 @@
     "price_source_unavailable": {
       "title": "KD Brain kan de prijsbron niet bereiken",
       "description": "KD Brain kon geen prijzen ophalen van {source}. Het blijft automatisch opnieuw proberen; controleer je internetverbinding als dit aanhoudt."
+    },
+    "milp_unavailable": {
+      "title": "KD Brain MILP-optimizer niet beschikbaar",
+      "description": "Je hebt de MILP-optimizer gekozen, maar het optionele pakket 'highspy' is niet geïnstalleerd. KD Brain gebruikt nu de heuristische optimizer. Installeer 'highspy' in de omgeving van Home Assistant, of zet de modus terug op heuristisch."
     }
   }
 }

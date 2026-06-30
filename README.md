@@ -50,7 +50,7 @@ beslissing zien **waarom** die genomen is.
 | **M2** ✅ | Telemetrie via entity-adapters (HomeWizard P1, Growatt, Marstek) + SystemState + onbalansprijzen |
 | **M3** ✅ | Optimalisatie-engine + 3 strategieën + uitlegbare beslissing (observe-only) |
 | **M4** ✅ | Safety layer + actuators — echte sturing van de batterij (opt-in) |
-| M5 | Peak shaving, MILP-arbitrage, PV/weer-forecast, NL-regelgeving 2026/2027/2029 |
+| **M5** ✅ | Peak shaving, backup-reserve, NL-regelgeving 2026/2027/2029, PV-forecast, optionele MILP |
 | M6 | EV & warmtepomp |
 | M7 | Dashboards, AI-ready interfaces, Quality Scale Gold |
 
@@ -68,6 +68,19 @@ Zie [het architectuurplan](#architectuur) en `CHANGELOG.md` voor details.
 > Privacy: KD Brain stuurt geen telemetrie naar buiten. De enige externe netwerkverbinding is het
 > ophalen van publieke prijzen bij epexprijzen.nl. Al je instellingen blijven lokaal in Home
 > Assistant (`.storage`).
+
+## Optioneel: MILP-optimizer
+
+KD Brain heeft een optionele exacte MILP-optimizer (HiGHS) die het kostenoptimale laad/ontlaad-schema
+over de hele prijshorizon berekent. Schakel hem in via **Opties → Strategieën → Optimizer-modus →
+MILP**. Dit vereist het pakket `highspy` in de Home Assistant-omgeving:
+
+```bash
+pip install highspy
+```
+
+Is `highspy` niet geïnstalleerd, dan valt KD Brain automatisch terug op de (standaard) heuristische
+optimizer en toont een reparatie-melding. De heuristische modus werkt out-of-the-box zonder extra's.
 
 ## Architectuur
 

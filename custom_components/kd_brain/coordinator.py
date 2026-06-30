@@ -30,19 +30,22 @@ from .const import (
     EVENT_ACTUATION,
     EVENT_DECISION,
     EVENT_PRICES_UPDATED,
+    ISSUE_MILP_UNAVAILABLE,
     ISSUE_PRICE_SOURCE_UNAVAILABLE,
     MAX_UPDATE_INTERVAL_MINUTES,
     MIN_UPDATE_INTERVAL_MINUTES,
+    OPTIMIZER_MILP,
     PRICE_SOURCE_EPEXPRIJZEN,
 )
 from .data.adapters.entity_adapter import EntityAdapter
-from .data.models import Forecast, PriceSeries, Telemetry
+from .data.models import Forecast, PriceSeries, SystemState, Telemetry
 from .data.sources.base import PriceSource, PriceSourceError
 from .data.sources.epexprijzen import EpexPrijzenSource
 from .economics import TariffConfig
 from .engine.config import OptimizerConfig
 from .engine.decision import Decision
 from .engine.forecaster import build_forecaster
+from .engine.milp import MilpUnavailableError, milp_optimize
 from .engine.optimizer import optimize
 from .engine.state import build_system_state
 from .safety.config import SafetyConfig
@@ -209,14 +212,34 @@ class KDBrainOptimizationCoordinator(DataUpdateCoordinator[Decision | None]):
         if prices is None or prices.is_empty:
             return None
         telemetry = self._telemetry.data or Telemetry()
+        config = self.optimizer_config
         self._forecast = self._forecaster.predict(self.hass)
         state = build_system_state(dt_util.utcnow(), prices, telemetry, self._forecast)
-        decision = optimize(state, self.optimizer_config)
+        decision = self._decide(state, config)
         self.hass.bus.async_fire(
             EVENT_DECISION,
             {"action": decision.chosen.action.value, "strategy": decision.strategy},
         )
         return decision
+
+    def _decide(self, state: SystemState, config: OptimizerConfig) -> Decision:
+        """Run the configured optimiser, falling back to the heuristic."""
+        if config.optimizer_mode != OPTIMIZER_MILP:
+            return optimize(state, config)
+        try:
+            decision = milp_optimize(state, config)
+        except MilpUnavailableError:
+            ir.async_create_issue(
+                self.hass,
+                DOMAIN,
+                ISSUE_MILP_UNAVAILABLE,
+                is_fixable=False,
+                severity=ir.IssueSeverity.WARNING,
+                translation_key=ISSUE_MILP_UNAVAILABLE,
+            )
+            return optimize(state, config)
+        ir.async_delete_issue(self.hass, DOMAIN, ISSUE_MILP_UNAVAILABLE)
+        return decision if decision is not None else optimize(state, config)
 
     @callback
     def async_setup_listeners(self) -> list[CALLBACK_TYPE]:
