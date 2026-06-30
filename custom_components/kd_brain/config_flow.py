@@ -31,6 +31,7 @@ from homeassistant.helpers.selector import (
 import voluptuous as vol
 
 from .const import (
+    CONF_BACKUP_RESERVE_SOC,
     CONF_BATTERY_CAPACITY_WH,
     CONF_BATTERY_MAX_SOC,
     CONF_BATTERY_MIN_SOC,
@@ -40,7 +41,9 @@ from .const import (
     CONF_CONTROL_MODE,
     CONF_DEGRADATION_COST,
     CONF_ENABLE_ARBITRAGE,
+    CONF_ENABLE_BACKUP_RESERVE,
     CONF_ENABLE_DYNAMIC_PRICING,
+    CONF_ENABLE_PEAK_SHAVING,
     CONF_ENABLE_SELF_CONSUMPTION,
     CONF_ENERGY_TAX,
     CONF_FEED_IN_MARKUP,
@@ -53,6 +56,8 @@ from .const import (
     CONF_MAX_DISCHARGE_POWER_W,
     CONF_MIN_DWELL_SECONDS,
     CONF_MONTHLY_FEE,
+    CONF_PEAK_SHAVE_EXPORT_W,
+    CONF_PEAK_SHAVE_IMPORT_W,
     CONF_PRICE_INTERVAL,
     CONF_PRICE_LOW_THRESHOLD,
     CONF_PRICE_SOURCE,
@@ -66,13 +71,16 @@ from .const import (
     CONF_WRITE_THROTTLE_SECONDS,
     CONTROL_ACTIVE,
     CONTROL_OBSERVE,
+    DEFAULT_BACKUP_RESERVE_SOC,
     DEFAULT_BATTERY_CAPACITY_WH,
     DEFAULT_BATTERY_MAX_SOC,
     DEFAULT_BATTERY_MIN_SOC,
     DEFAULT_CONTROL_MODE,
     DEFAULT_DEGRADATION_COST,
     DEFAULT_ENABLE_ARBITRAGE,
+    DEFAULT_ENABLE_BACKUP_RESERVE,
     DEFAULT_ENABLE_DYNAMIC_PRICING,
+    DEFAULT_ENABLE_PEAK_SHAVING,
     DEFAULT_ENABLE_SELF_CONSUMPTION,
     DEFAULT_ENERGY_TAX,
     DEFAULT_FEED_IN_MARKUP,
@@ -82,6 +90,8 @@ from .const import (
     DEFAULT_MAX_DISCHARGE_POWER_W,
     DEFAULT_MIN_DWELL_SECONDS,
     DEFAULT_MONTHLY_FEE,
+    DEFAULT_PEAK_SHAVE_EXPORT_W,
+    DEFAULT_PEAK_SHAVE_IMPORT_W,
     DEFAULT_PRICE_INTERVAL,
     DEFAULT_PRICE_LOW_THRESHOLD,
     DEFAULT_PRICE_SOURCE,
@@ -318,6 +328,8 @@ _STRATEGY_DEFAULTS: dict[str, Any] = {
     CONF_ENABLE_SELF_CONSUMPTION: DEFAULT_ENABLE_SELF_CONSUMPTION,
     CONF_ENABLE_DYNAMIC_PRICING: DEFAULT_ENABLE_DYNAMIC_PRICING,
     CONF_ENABLE_ARBITRAGE: DEFAULT_ENABLE_ARBITRAGE,
+    CONF_ENABLE_PEAK_SHAVING: DEFAULT_ENABLE_PEAK_SHAVING,
+    CONF_ENABLE_BACKUP_RESERVE: DEFAULT_ENABLE_BACKUP_RESERVE,
     CONF_DEGRADATION_COST: float(DEFAULT_DEGRADATION_COST),
     CONF_ROUNDTRIP_EFFICIENCY: float(DEFAULT_ROUNDTRIP_EFFICIENCY),
     CONF_SAFETY_MARGIN: float(DEFAULT_SAFETY_MARGIN),
@@ -325,6 +337,9 @@ _STRATEGY_DEFAULTS: dict[str, Any] = {
     CONF_BATTERY_MAX_SOC: DEFAULT_BATTERY_MAX_SOC,
     CONF_MAX_CHARGE_POWER_W: DEFAULT_MAX_CHARGE_POWER_W,
     CONF_MAX_DISCHARGE_POWER_W: DEFAULT_MAX_DISCHARGE_POWER_W,
+    CONF_PEAK_SHAVE_IMPORT_W: DEFAULT_PEAK_SHAVE_IMPORT_W,
+    CONF_PEAK_SHAVE_EXPORT_W: DEFAULT_PEAK_SHAVE_EXPORT_W,
+    CONF_BACKUP_RESERVE_SOC: DEFAULT_BACKUP_RESERVE_SOC,
 }
 
 
@@ -370,6 +385,13 @@ def _strategy_schema(values: Mapping[str, Any]) -> vol.Schema:
                 CONF_ENABLE_ARBITRAGE, default=default(CONF_ENABLE_ARBITRAGE)
             ): BooleanSelector(),
             vol.Required(
+                CONF_ENABLE_PEAK_SHAVING, default=default(CONF_ENABLE_PEAK_SHAVING)
+            ): BooleanSelector(),
+            vol.Required(
+                CONF_ENABLE_BACKUP_RESERVE,
+                default=default(CONF_ENABLE_BACKUP_RESERVE),
+            ): BooleanSelector(),
+            vol.Required(
                 CONF_DEGRADATION_COST, default=default(CONF_DEGRADATION_COST)
             ): _price_per_kwh(),
             vol.Required(
@@ -396,6 +418,18 @@ def _strategy_schema(values: Mapping[str, Any]) -> vol.Schema:
                 CONF_MAX_DISCHARGE_POWER_W,
                 default=default(CONF_MAX_DISCHARGE_POWER_W),
             ): _power_w(),
+            vol.Required(
+                CONF_PEAK_SHAVE_IMPORT_W,
+                default=default(CONF_PEAK_SHAVE_IMPORT_W),
+            ): _power_w(),
+            vol.Required(
+                CONF_PEAK_SHAVE_EXPORT_W,
+                default=default(CONF_PEAK_SHAVE_EXPORT_W),
+            ): _power_w(),
+            vol.Required(
+                CONF_BACKUP_RESERVE_SOC,
+                default=default(CONF_BACKUP_RESERVE_SOC),
+            ): _percent(),
         }
     )
 

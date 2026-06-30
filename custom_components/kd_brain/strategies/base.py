@@ -12,6 +12,8 @@ from ..engine.decision import Action, BatteryAction, Proposal
 SELF_CONSUMPTION = "self_consumption"
 DYNAMIC_PRICING = "dynamic_pricing"
 ARBITRAGE = "arbitrage"
+PEAK_SHAVING = "peak_shaving"
+BACKUP_RESERVE = "backup_reserve"
 
 
 @runtime_checkable

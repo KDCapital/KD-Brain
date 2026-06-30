@@ -58,13 +58,18 @@
           "enable_self_consumption": "Zelfverbruik-strategie",
           "enable_dynamic_pricing": "Dynamische prijzen-strategie",
           "enable_arbitrage": "Arbitrage-strategie",
+          "enable_peak_shaving": "Peak shaving-strategie",
+          "enable_backup_reserve": "Backup-reserve-strategie",
           "degradation_cost": "Batterijdegradatiekosten",
           "roundtrip_efficiency": "Roundtrip-rendement (0-1)",
           "safety_margin": "Arbitrage-veiligheidsmarge",
           "battery_min_soc": "Minimale laadtoestand",
           "battery_max_soc": "Maximale laadtoestand",
           "max_charge_power_w": "Maximaal laadvermogen",
-          "max_discharge_power_w": "Maximaal ontlaadvermogen"
+          "max_discharge_power_w": "Maximaal ontlaadvermogen",
+          "peak_shave_import_w": "Peak shaving: max netimport",
+          "peak_shave_export_w": "Peak shaving: max netexport",
+          "backup_reserve_soc": "Backup-reserve laadtoestand"
         }
       },
       "devices": {

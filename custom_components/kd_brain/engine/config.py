@@ -12,24 +12,34 @@ from decimal import Decimal
 from typing import Any
 
 from ..const import (
+    CONF_BACKUP_RESERVE_SOC,
     CONF_BATTERY_MAX_SOC,
     CONF_BATTERY_MIN_SOC,
     CONF_DEGRADATION_COST,
     CONF_ENABLE_ARBITRAGE,
+    CONF_ENABLE_BACKUP_RESERVE,
     CONF_ENABLE_DYNAMIC_PRICING,
+    CONF_ENABLE_PEAK_SHAVING,
     CONF_ENABLE_SELF_CONSUMPTION,
     CONF_MAX_CHARGE_POWER_W,
     CONF_MAX_DISCHARGE_POWER_W,
+    CONF_PEAK_SHAVE_EXPORT_W,
+    CONF_PEAK_SHAVE_IMPORT_W,
     CONF_ROUNDTRIP_EFFICIENCY,
     CONF_SAFETY_MARGIN,
+    DEFAULT_BACKUP_RESERVE_SOC,
     DEFAULT_BATTERY_MAX_SOC,
     DEFAULT_BATTERY_MIN_SOC,
     DEFAULT_DEGRADATION_COST,
     DEFAULT_ENABLE_ARBITRAGE,
+    DEFAULT_ENABLE_BACKUP_RESERVE,
     DEFAULT_ENABLE_DYNAMIC_PRICING,
+    DEFAULT_ENABLE_PEAK_SHAVING,
     DEFAULT_ENABLE_SELF_CONSUMPTION,
     DEFAULT_MAX_CHARGE_POWER_W,
     DEFAULT_MAX_DISCHARGE_POWER_W,
+    DEFAULT_PEAK_SHAVE_EXPORT_W,
+    DEFAULT_PEAK_SHAVE_IMPORT_W,
     DEFAULT_ROUNDTRIP_EFFICIENCY,
     DEFAULT_SAFETY_MARGIN,
 )
@@ -51,6 +61,8 @@ class OptimizerConfig:
     self_consumption: bool
     dynamic_pricing: bool
     arbitrage: bool
+    peak_shaving: bool
+    backup_reserve: bool
     degradation_cost: Decimal
     roundtrip_efficiency: Decimal
     safety_margin: Decimal
@@ -58,6 +70,9 @@ class OptimizerConfig:
     battery_max_soc: float
     max_charge_w: int
     max_discharge_w: int
+    peak_import_w: int
+    peak_export_w: int
+    backup_reserve_soc: float
 
     @classmethod
     def from_options(cls, options: dict[str, Any]) -> OptimizerConfig:
@@ -73,6 +88,12 @@ class OptimizerConfig:
             ),
             arbitrage=bool(
                 options.get(CONF_ENABLE_ARBITRAGE, DEFAULT_ENABLE_ARBITRAGE)
+            ),
+            peak_shaving=bool(
+                options.get(CONF_ENABLE_PEAK_SHAVING, DEFAULT_ENABLE_PEAK_SHAVING)
+            ),
+            backup_reserve=bool(
+                options.get(CONF_ENABLE_BACKUP_RESERVE, DEFAULT_ENABLE_BACKUP_RESERVE)
             ),
             degradation_cost=_decimal(
                 options.get(CONF_DEGRADATION_COST), DEFAULT_DEGRADATION_COST
@@ -95,6 +116,15 @@ class OptimizerConfig:
             ),
             max_discharge_w=int(
                 options.get(CONF_MAX_DISCHARGE_POWER_W, DEFAULT_MAX_DISCHARGE_POWER_W)
+            ),
+            peak_import_w=int(
+                options.get(CONF_PEAK_SHAVE_IMPORT_W, DEFAULT_PEAK_SHAVE_IMPORT_W)
+            ),
+            peak_export_w=int(
+                options.get(CONF_PEAK_SHAVE_EXPORT_W, DEFAULT_PEAK_SHAVE_EXPORT_W)
+            ),
+            backup_reserve_soc=float(
+                options.get(CONF_BACKUP_RESERVE_SOC, DEFAULT_BACKUP_RESERVE_SOC)
             ),
         )
 

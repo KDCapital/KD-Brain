@@ -18,7 +18,9 @@ from custom_components.kd_brain.engine.config import OptimizerConfig
 from custom_components.kd_brain.engine.decision import BatteryAction
 from custom_components.kd_brain.engine.optimizer import optimize
 from custom_components.kd_brain.strategies.arbitrage import ArbitrageStrategy
+from custom_components.kd_brain.strategies.backup_reserve import BackupReserveStrategy
 from custom_components.kd_brain.strategies.dynamic_pricing import DynamicPricingStrategy
+from custom_components.kd_brain.strategies.peak_shaving import PeakShavingStrategy
 from custom_components.kd_brain.strategies.self_consumption import (
     SelfConsumptionStrategy,
 )
@@ -110,7 +112,57 @@ def test_arbitrage_profit_accounts_for_costs() -> None:
     assert config.arbitrage_profit(Decimal("0.20"), Decimal("0.22")) < 0
 
 
+# --- Peak shaving ----------------------------------------------------------
+
+
+def test_peak_shaving_discharges_on_import_peak() -> None:
+    state = _state(_series((10, 0.2)), Telemetry(grid=GridState(power_w=5000.0)))
+    proposal = PeakShavingStrategy().propose(state, _config(peak_import_w=3000))
+    assert proposal is not None
+    assert proposal.action.action is BatteryAction.DISCHARGE
+
+
+def test_peak_shaving_charges_on_export_peak() -> None:
+    state = _state(_series((10, 0.2)), Telemetry(grid=GridState(power_w=-5000.0)))
+    proposal = PeakShavingStrategy().propose(state, _config(peak_export_w=3000))
+    assert proposal is not None
+    assert proposal.action.action is BatteryAction.CHARGE
+
+
+def test_peak_shaving_abstains_within_limits() -> None:
+    state = _state(_series((10, 0.2)), Telemetry(grid=GridState(power_w=1000.0)))
+    assert PeakShavingStrategy().propose(state, _config()) is None
+
+
+# --- Backup reserve --------------------------------------------------------
+
+
+def test_backup_reserve_charges_below_reserve() -> None:
+    state = _state(_series((10, 0.2)), Telemetry(batteries=(BatteryState(soc=10.0),)))
+    proposal = BackupReserveStrategy().propose(state, _config(backup_reserve_soc=20.0))
+    assert proposal is not None
+    assert proposal.action.action is BatteryAction.CHARGE
+
+
+def test_backup_reserve_abstains_above_reserve() -> None:
+    state = _state(_series((10, 0.2)), Telemetry(batteries=(BatteryState(soc=50.0),)))
+    assert (
+        BackupReserveStrategy().propose(state, _config(backup_reserve_soc=20.0)) is None
+    )
+
+
 # --- Optimiser -------------------------------------------------------------
+
+
+def test_optimizer_peak_shaving_outranks_others() -> None:
+    # Cheap prices (dynamic pricing would charge) but an import peak is present.
+    state = _state(
+        _series((10, 0.10), (11, 0.30)),
+        Telemetry(grid=GridState(power_w=6000.0)),
+    )
+    decision = optimize(state, _config(peak_shaving=True, peak_import_w=3000))
+    assert decision.strategy == "peak_shaving"
+    assert decision.chosen.action is BatteryAction.DISCHARGE
 
 
 def test_optimizer_picks_highest_score() -> None:

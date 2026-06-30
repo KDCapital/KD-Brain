@@ -58,13 +58,18 @@
           "enable_self_consumption": "Self-consumption strategy",
           "enable_dynamic_pricing": "Dynamic pricing strategy",
           "enable_arbitrage": "Arbitrage strategy",
+          "enable_peak_shaving": "Peak shaving strategy",
+          "enable_backup_reserve": "Backup reserve strategy",
           "degradation_cost": "Battery degradation cost",
           "roundtrip_efficiency": "Round-trip efficiency (0-1)",
           "safety_margin": "Arbitrage safety margin",
           "battery_min_soc": "Minimum state of charge",
           "battery_max_soc": "Maximum state of charge",
           "max_charge_power_w": "Maximum charge power",
-          "max_discharge_power_w": "Maximum discharge power"
+          "max_discharge_power_w": "Maximum discharge power",
+          "peak_shave_import_w": "Peak shaving: max grid import",
+          "peak_shave_export_w": "Peak shaving: max grid export",
+          "backup_reserve_soc": "Backup reserve state of charge"
         }
       },
       "devices": {
