@@ -61,6 +61,8 @@ from .const import (
     CONF_PRICE_INTERVAL,
     CONF_PRICE_LOW_THRESHOLD,
     CONF_PRICE_SOURCE,
+    CONF_PV_FORECAST_POWER_ENTITY,
+    CONF_PV_FORECAST_TODAY_ENTITY,
     CONF_PV_POWER_ENTITY,
     CONF_REGULATION_PROFILE,
     CONF_ROUNDTRIP_EFFICIENCY,
@@ -125,6 +127,8 @@ _DEVICE_ENTITY_KEYS = (
     CONF_BATTERY_SOC_ENTITIES,
     CONF_BATTERY_POWER_ENTITIES,
     CONF_IMBALANCE_PRICE_ENTITY,
+    CONF_PV_FORECAST_POWER_ENTITY,
+    CONF_PV_FORECAST_TODAY_ENTITY,
 )
 
 TITLE = "KD Brain"
@@ -325,6 +329,14 @@ def _devices_schema(values: Mapping[str, Any]) -> vol.Schema:
                     unit_of_measurement="Wh",
                 )
             ),
+            vol.Optional(
+                CONF_PV_FORECAST_POWER_ENTITY,
+                description=suggest(CONF_PV_FORECAST_POWER_ENTITY),
+            ): _power_entity(),
+            vol.Optional(
+                CONF_PV_FORECAST_TODAY_ENTITY,
+                description=suggest(CONF_PV_FORECAST_TODAY_ENTITY),
+            ): _power_entity(),
             vol.Optional(
                 CONF_IMBALANCE_PRICE_ENTITY,
                 description=suggest(CONF_IMBALANCE_PRICE_ENTITY),

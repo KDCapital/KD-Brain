@@ -43,6 +43,8 @@ CONF_BATTERY_POWER_ENTITIES: Final = "battery_power_entities"
 CONF_BATTERY_CAPACITY_WH: Final = "battery_capacity_wh"
 CONF_IMBALANCE_PRICE_ENTITY: Final = "imbalance_price_entity"
 CONF_IMBALANCE_UNIT: Final = "imbalance_unit"
+CONF_PV_FORECAST_POWER_ENTITY: Final = "pv_forecast_power_entity"
+CONF_PV_FORECAST_TODAY_ENTITY: Final = "pv_forecast_today_entity"
 
 # Imbalance price unit of the source entity.
 IMBALANCE_UNIT_KWH: Final = "eur_kwh"

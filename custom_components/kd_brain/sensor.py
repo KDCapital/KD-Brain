@@ -14,7 +14,7 @@ from homeassistant.components.sensor import (
     SensorEntityDescription,
     SensorStateClass,
 )
-from homeassistant.const import PERCENTAGE, UnitOfPower
+from homeassistant.const import PERCENTAGE, UnitOfEnergy, UnitOfPower
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
 from homeassistant.helpers.typing import StateType
@@ -28,6 +28,8 @@ from .const import (
     CONF_IMBALANCE_PRICE_ENTITY,
     CONF_LOAD_POWER_ENTITY,
     CONF_PRICE_INTERVAL,
+    CONF_PV_FORECAST_POWER_ENTITY,
+    CONF_PV_FORECAST_TODAY_ENTITY,
     CONF_PV_POWER_ENTITY,
     CURRENCY_PER_KWH,
     DEFAULT_PRICE_INTERVAL,
@@ -223,6 +225,11 @@ async def async_setup_entry(
     entities.append(KDBrainActiveStrategySensor(optimization))
     entities.append(KDBrainLastActuationSensor(runtime.actuation_coordinator))
 
+    if options.get(CONF_PV_FORECAST_POWER_ENTITY):
+        entities.append(KDBrainForecastPowerSensor(optimization))
+    if options.get(CONF_PV_FORECAST_TODAY_ENTITY):
+        entities.append(KDBrainForecastTodaySensor(optimization))
+
     async_add_entities(entities)
 
 
@@ -393,6 +400,44 @@ class KDBrainActiveStrategySensor(KDBrainOptimizationEntity, SensorEntity):
         """Expose the rationale for the active strategy."""
         decision = self.coordinator.data
         return None if decision is None else {"why": decision.why}
+
+
+class KDBrainForecastPowerSensor(KDBrainOptimizationEntity, SensorEntity):
+    """The forecast PV power for the next hour."""
+
+    _attr_translation_key = "pv_forecast_power"
+    _attr_device_class = SensorDeviceClass.POWER
+    _attr_native_unit_of_measurement = UnitOfPower.WATT
+    _attr_state_class = SensorStateClass.MEASUREMENT
+
+    def __init__(self, coordinator: KDBrainOptimizationCoordinator) -> None:
+        """Initialise the sensor."""
+        super().__init__(coordinator, "pv_forecast_power")
+
+    @property
+    def native_value(self) -> StateType:
+        """Return the forecast PV power."""
+        value = self.coordinator.forecast.pv_power_next_hour_w
+        return None if value is None else round(value, 1)
+
+
+class KDBrainForecastTodaySensor(KDBrainOptimizationEntity, SensorEntity):
+    """The forecast total PV production for today."""
+
+    _attr_translation_key = "pv_forecast_today"
+    _attr_device_class = SensorDeviceClass.ENERGY
+    _attr_native_unit_of_measurement = UnitOfEnergy.KILO_WATT_HOUR
+    _attr_state_class = SensorStateClass.MEASUREMENT
+
+    def __init__(self, coordinator: KDBrainOptimizationCoordinator) -> None:
+        """Initialise the sensor."""
+        super().__init__(coordinator, "pv_forecast_today")
+
+    @property
+    def native_value(self) -> StateType:
+        """Return the forecast PV production for today."""
+        value = self.coordinator.forecast.pv_energy_today_kwh
+        return None if value is None else round(value, 2)
 
 
 class KDBrainLastActuationSensor(KDBrainActuationEntity, SensorEntity):

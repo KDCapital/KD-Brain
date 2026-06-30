@@ -45,7 +45,8 @@ async def async_get_config_entry_diagnostics(
         "snapshot": telemetry.as_dict() if telemetry is not None else None,
     }
 
-    decision = entry.runtime_data.optimization_coordinator.data
+    optimization = entry.runtime_data.optimization_coordinator
+    decision = optimization.data
     actuation = entry.runtime_data.actuation_coordinator.data
 
     return {
@@ -66,4 +67,5 @@ async def async_get_config_entry_diagnostics(
         "telemetry": telemetry_diag,
         "decision": decision.as_dict() if decision is not None else None,
         "actuation": actuation.as_dict() if actuation is not None else None,
+        "forecast": optimization.forecast.as_dict(),
     }

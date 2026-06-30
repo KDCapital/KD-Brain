@@ -238,9 +238,30 @@ class Telemetry:
 
 
 @dataclass(frozen=True, slots=True)
+class Forecast:
+    """Forward-looking estimates (PV production, ...).
+
+    Produced by a :class:`~custom_components.kd_brain.engine.forecaster.Forecaster`.
+    Currently fed from an external HA forecast entity; the interface is designed
+    so a machine-learning forecaster can replace it without engine changes.
+    """
+
+    pv_power_next_hour_w: float | None = None
+    pv_energy_today_kwh: float | None = None
+
+    def as_dict(self) -> dict[str, float | None]:
+        """Serialise for entity attributes/diagnostics."""
+        return {
+            "pv_power_next_hour_w": self.pv_power_next_hour_w,
+            "pv_energy_today_kwh": self.pv_energy_today_kwh,
+        }
+
+
+@dataclass(frozen=True, slots=True)
 class SystemState:
     """Immutable snapshot combining prices and telemetry for one decision round."""
 
     ts: datetime
     prices: PriceSeries
     telemetry: Telemetry
+    forecast: Forecast = Forecast()

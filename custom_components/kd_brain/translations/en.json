@@ -83,6 +83,8 @@
           "battery_soc_entities": "Battery state-of-charge sensor(s)",
           "battery_power_entities": "Battery power sensor(s) (+ charging)",
           "battery_capacity_wh": "Battery capacity per unit",
+          "pv_forecast_power_entity": "PV forecast power sensor (e.g. next hour)",
+          "pv_forecast_today_entity": "PV forecast energy today sensor",
           "imbalance_price_entity": "Imbalance price sensor (optional)",
           "imbalance_unit": "Imbalance price unit"
         }
@@ -160,6 +162,8 @@
       "battery_soc": { "name": "Battery state of charge" },
       "battery_power": { "name": "Battery power" },
       "imbalance_price": { "name": "Imbalance price" },
+      "pv_forecast_power": { "name": "Solar forecast power" },
+      "pv_forecast_today": { "name": "Solar forecast today" },
       "recommended_action": {
         "name": "Recommended action",
         "state": {

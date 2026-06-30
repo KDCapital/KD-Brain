@@ -9,11 +9,16 @@ from __future__ import annotations
 
 from datetime import datetime
 
-from ..data.models import PriceSeries, SystemState, Telemetry
+from ..data.models import Forecast, PriceSeries, SystemState, Telemetry
+
+_EMPTY_FORECAST = Forecast()
 
 
 def build_system_state(
-    now: datetime, prices: PriceSeries, telemetry: Telemetry
+    now: datetime,
+    prices: PriceSeries,
+    telemetry: Telemetry,
+    forecast: Forecast = _EMPTY_FORECAST,
 ) -> SystemState:
-    """Assemble a snapshot from the latest prices and telemetry."""
-    return SystemState(ts=now, prices=prices, telemetry=telemetry)
+    """Assemble a snapshot from the latest prices, telemetry and forecast."""
+    return SystemState(ts=now, prices=prices, telemetry=telemetry, forecast=forecast)

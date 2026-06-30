@@ -36,12 +36,13 @@ from .const import (
     PRICE_SOURCE_EPEXPRIJZEN,
 )
 from .data.adapters.entity_adapter import EntityAdapter
-from .data.models import PriceSeries, Telemetry
+from .data.models import Forecast, PriceSeries, Telemetry
 from .data.sources.base import PriceSource, PriceSourceError
 from .data.sources.epexprijzen import EpexPrijzenSource
 from .economics import TariffConfig
 from .engine.config import OptimizerConfig
 from .engine.decision import Decision
+from .engine.forecaster import build_forecaster
 from .engine.optimizer import optimize
 from .engine.state import build_system_state
 from .safety.config import SafetyConfig
@@ -188,6 +189,8 @@ class KDBrainOptimizationCoordinator(DataUpdateCoordinator[Decision | None]):
         )
         self._price = price_coordinator
         self._telemetry = telemetry_coordinator
+        self._forecaster = build_forecaster(dict(entry.options))
+        self._forecast = Forecast()
 
     @property
     def optimizer_config(self) -> OptimizerConfig:
@@ -195,13 +198,19 @@ class KDBrainOptimizationCoordinator(DataUpdateCoordinator[Decision | None]):
         assert self.config_entry is not None
         return OptimizerConfig.from_options(dict(self.config_entry.options))
 
+    @property
+    def forecast(self) -> Forecast:
+        """Return the most recent forecast."""
+        return self._forecast
+
     async def _async_update_data(self) -> Decision | None:
         """Build a system state and run the optimiser."""
         prices = self._price.data
         if prices is None or prices.is_empty:
             return None
         telemetry = self._telemetry.data or Telemetry()
-        state = build_system_state(dt_util.utcnow(), prices, telemetry)
+        self._forecast = self._forecaster.predict(self.hass)
+        state = build_system_state(dt_util.utcnow(), prices, telemetry, self._forecast)
         decision = optimize(state, self.optimizer_config)
         self.hass.bus.async_fire(
             EVENT_DECISION,
@@ -211,15 +220,28 @@ class KDBrainOptimizationCoordinator(DataUpdateCoordinator[Decision | None]):
 
     @callback
     def async_setup_listeners(self) -> list[CALLBACK_TYPE]:
-        """Recompute whenever prices or telemetry update."""
-        return [
+        """Recompute whenever prices, telemetry or forecast entities update."""
+        listeners = [
             self._price.async_add_listener(self._handle_upstream),
             self._telemetry.async_add_listener(self._handle_upstream),
         ]
+        forecast_ids = self._forecaster.entity_ids
+        if forecast_ids:
+            listeners.append(
+                async_track_state_change_event(
+                    self.hass, forecast_ids, self._handle_forecast_change
+                )
+            )
+        return listeners
 
     @callback
     def _handle_upstream(self) -> None:
         """Schedule a debounced recompute on an upstream update."""
+        self.hass.async_create_task(self.async_request_refresh())
+
+    @callback
+    def _handle_forecast_change(self, event: Event[EventStateChangedData]) -> None:
+        """Schedule a recompute when a forecast entity changes."""
         self.hass.async_create_task(self.async_request_refresh())
 
 
