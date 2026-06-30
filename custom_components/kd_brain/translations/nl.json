@@ -14,6 +14,7 @@
         "data": {
           "price_source": "Prijsbron",
           "price_interval": "Weergaveresolutie",
+          "regulation_profile": "Regelgevingsprofiel",
           "energy_tax": "Energiebelasting (excl. BTW)",
           "supplier_markup": "Leveranciersopslag (excl. BTW)",
           "feed_in_markup": "Terugleverkosten (excl. BTW)",
@@ -99,6 +100,7 @@
         "data": {
           "price_source": "Prijsbron",
           "price_interval": "Weergaveresolutie",
+          "regulation_profile": "Regelgevingsprofiel",
           "energy_tax": "Energiebelasting (excl. BTW)",
           "supplier_markup": "Leveranciersopslag (excl. BTW)",
           "feed_in_markup": "Terugleverkosten (excl. BTW)",
@@ -132,6 +134,13 @@
       "options": {
         "observe_only": "Alleen observeren (adviseren, niet sturen)",
         "active": "Actief (batterij aansturen)"
+      }
+    },
+    "regulation_profile": {
+      "options": {
+        "saldering_2026": "2026 — saldering (net metering)",
+        "no_saldering_2027": "2027 — geen saldering",
+        "capacity_2029": "2029 — geen saldering + capaciteitstarieven"
       }
     }
   },

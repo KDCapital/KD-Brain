@@ -23,7 +23,14 @@ CONF_ENERGY_TAX: Final = "energy_tax"
 CONF_SUPPLIER_MARKUP: Final = "supplier_markup"
 CONF_FEED_IN_MARKUP: Final = "feed_in_markup"
 CONF_MONTHLY_FEE: Final = "monthly_fee"
+CONF_REGULATION_PROFILE: Final = "regulation_profile"
 CONF_VAT: Final = "vat"
+
+# NL regulation profiles (affect how exported energy is valued).
+REGULATION_SALDERING: Final = "saldering_2026"  # net metering: feed-in nets at all-in
+REGULATION_NO_SALDERING: Final = "no_saldering_2027"  # market-based feed-in
+REGULATION_CAPACITY: Final = "capacity_2029"  # + time-dependent grid tariffs
+DEFAULT_REGULATION_PROFILE: Final = REGULATION_SALDERING
 CONF_PRICE_LOW_THRESHOLD: Final = "price_low_threshold"
 CONF_UPDATE_INTERVAL_MINUTES: Final = "update_interval_minutes"
 

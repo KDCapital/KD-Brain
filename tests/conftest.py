@@ -42,6 +42,7 @@ from custom_components.kd_brain.const import (
     CONF_PRICE_INTERVAL,
     CONF_PRICE_LOW_THRESHOLD,
     CONF_PRICE_SOURCE,
+    CONF_REGULATION_PROFILE,
     CONF_SUPPLIER,
     CONF_SUPPLIER_MARKUP,
     CONF_UPDATE_INTERVAL_MINUTES,
@@ -49,6 +50,7 @@ from custom_components.kd_brain.const import (
     DOMAIN,
     INTERVAL_QUARTERLY,
     PRICE_SOURCE_EPEXPRIJZEN,
+    REGULATION_NO_SALDERING,
 )
 from custom_components.kd_brain.data.providers import MANUAL
 from custom_components.kd_brain.data.sources.epexprijzen import API_URL
@@ -76,6 +78,7 @@ PRICE_PAYLOAD: dict[str, Any] = {
 
 # The tariff/price values shown on the second flow step (everything but supplier).
 VALUES: dict[str, Any] = {
+    CONF_REGULATION_PROFILE: REGULATION_NO_SALDERING,
     CONF_PRICE_SOURCE: PRICE_SOURCE_EPEXPRIJZEN,
     CONF_PRICE_INTERVAL: INTERVAL_QUARTERLY,
     CONF_ENERGY_TAX: 0.10,

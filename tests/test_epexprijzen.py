@@ -11,6 +11,7 @@ from homeassistant.util import dt as dt_util
 import pytest
 from pytest_homeassistant_custom_component.test_util.aiohttp import AiohttpClientMocker
 
+from custom_components.kd_brain.const import REGULATION_NO_SALDERING
 from custom_components.kd_brain.data.sources.base import PriceSourceError
 from custom_components.kd_brain.data.sources.epexprijzen import (
     API_URL,
@@ -26,6 +27,7 @@ def _tariff() -> TariffConfig:
         feed_in_markup=Decimal("0"),
         monthly_fee=Decimal("6.00"),
         vat=Decimal("0.21"),
+        regulation=REGULATION_NO_SALDERING,
     )
 
 

@@ -62,6 +62,7 @@ from .const import (
     CONF_PRICE_LOW_THRESHOLD,
     CONF_PRICE_SOURCE,
     CONF_PV_POWER_ENTITY,
+    CONF_REGULATION_PROFILE,
     CONF_ROUNDTRIP_EFFICIENCY,
     CONF_SAFETY_MARGIN,
     CONF_SUPPLIER,
@@ -95,6 +96,7 @@ from .const import (
     DEFAULT_PRICE_INTERVAL,
     DEFAULT_PRICE_LOW_THRESHOLD,
     DEFAULT_PRICE_SOURCE,
+    DEFAULT_REGULATION_PROFILE,
     DEFAULT_ROUNDTRIP_EFFICIENCY,
     DEFAULT_SAFETY_MARGIN,
     DEFAULT_SUPPLIER_MARKUP,
@@ -109,6 +111,9 @@ from .const import (
     MAX_UPDATE_INTERVAL_MINUTES,
     MIN_UPDATE_INTERVAL_MINUTES,
     PRICE_SOURCE_EPEXPRIJZEN,
+    REGULATION_CAPACITY,
+    REGULATION_NO_SALDERING,
+    REGULATION_SALDERING,
 )
 from .data.providers import MANUAL, PROVIDERS
 
@@ -128,6 +133,7 @@ TITLE = "KD Brain"
 _DEFAULTS: dict[str, Any] = {
     CONF_PRICE_SOURCE: DEFAULT_PRICE_SOURCE,
     CONF_PRICE_INTERVAL: DEFAULT_PRICE_INTERVAL,
+    CONF_REGULATION_PROFILE: DEFAULT_REGULATION_PROFILE,
     CONF_ENERGY_TAX: float(DEFAULT_ENERGY_TAX),
     CONF_SUPPLIER_MARKUP: float(DEFAULT_SUPPLIER_MARKUP),
     CONF_FEED_IN_MARKUP: float(DEFAULT_FEED_IN_MARKUP),
@@ -210,6 +216,19 @@ def _values_schema(values: Mapping[str, Any]) -> vol.Schema:
                 SelectSelectorConfig(
                     options=[INTERVAL_HOURLY, INTERVAL_QUARTERLY],
                     translation_key="price_interval",
+                    mode=SelectSelectorMode.DROPDOWN,
+                )
+            ),
+            vol.Required(
+                CONF_REGULATION_PROFILE, default=default(CONF_REGULATION_PROFILE)
+            ): SelectSelector(
+                SelectSelectorConfig(
+                    options=[
+                        REGULATION_SALDERING,
+                        REGULATION_NO_SALDERING,
+                        REGULATION_CAPACITY,
+                    ],
+                    translation_key="regulation_profile",
                     mode=SelectSelectorMode.DROPDOWN,
                 )
             ),

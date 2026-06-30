@@ -14,6 +14,7 @@
         "data": {
           "price_source": "Price source",
           "price_interval": "Display resolution",
+          "regulation_profile": "Regulation profile",
           "energy_tax": "Energy tax (excl. VAT)",
           "supplier_markup": "Supplier markup (excl. VAT)",
           "feed_in_markup": "Feed-in cost (excl. VAT)",
@@ -99,6 +100,7 @@
         "data": {
           "price_source": "Price source",
           "price_interval": "Display resolution",
+          "regulation_profile": "Regulation profile",
           "energy_tax": "Energy tax (excl. VAT)",
           "supplier_markup": "Supplier markup (excl. VAT)",
           "feed_in_markup": "Feed-in cost (excl. VAT)",
@@ -132,6 +134,13 @@
       "options": {
         "observe_only": "Observe only (recommend, do not steer)",
         "active": "Active (steer the battery)"
+      }
+    },
+    "regulation_profile": {
+      "options": {
+        "saldering_2026": "2026 — net metering (saldering)",
+        "no_saldering_2027": "2027 — no net metering",
+        "capacity_2029": "2029 — no net metering + capacity tariffs"
       }
     }
   },

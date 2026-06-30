@@ -20,13 +20,16 @@ from .const import (
     CONF_ENERGY_TAX,
     CONF_FEED_IN_MARKUP,
     CONF_MONTHLY_FEE,
+    CONF_REGULATION_PROFILE,
     CONF_SUPPLIER_MARKUP,
     CONF_VAT,
     DEFAULT_ENERGY_TAX,
     DEFAULT_FEED_IN_MARKUP,
     DEFAULT_MONTHLY_FEE,
+    DEFAULT_REGULATION_PROFILE,
     DEFAULT_SUPPLIER_MARKUP,
     DEFAULT_VAT,
+    REGULATION_SALDERING,
 )
 
 
@@ -48,6 +51,7 @@ class TariffConfig:
     feed_in_markup: Decimal
     monthly_fee: Decimal
     vat: Decimal
+    regulation: str
 
     @classmethod
     def from_options(cls, options: dict[str, Any]) -> TariffConfig:
@@ -62,6 +66,7 @@ class TariffConfig:
             ),
             monthly_fee=_to_decimal(options.get(CONF_MONTHLY_FEE), DEFAULT_MONTHLY_FEE),
             vat=_to_decimal(options.get(CONF_VAT), DEFAULT_VAT),
+            regulation=options.get(CONF_REGULATION_PROFILE, DEFAULT_REGULATION_PROFILE),
         )
 
     def consumption_price(self, market: Decimal) -> Decimal:
@@ -75,9 +80,12 @@ class TariffConfig:
     def feed_in_price(self, market: Decimal) -> Decimal:
         """Return the feed-in (teruglever) price for a raw market price.
 
-        ``(market - feed_in_markup) * (1 + VAT)``. The feed-in markup models the
-        per-kWh teruglever cost some suppliers charge. Saldering netting is
-        handled by the regulation layer in a later milestone.
+        Under net metering (saldering, 2026) exported energy is netted against
+        consumption, so it is worth the full all-in consumption price. Once net
+        metering ends (2027 / 2029) it is valued at the market-based teruglever
+        price ``(market - feed_in_markup) * (1 + VAT)``.
         """
+        if self.regulation == REGULATION_SALDERING:
+            return self.consumption_price(market)
         net = market - self.feed_in_markup
         return net * (Decimal(1) + self.vat)
