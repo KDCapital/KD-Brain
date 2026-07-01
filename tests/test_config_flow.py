@@ -71,6 +71,35 @@ async def test_user_flow_supplier_preset(hass: HomeAssistant, mock_epex) -> None
     assert result["options"][CONF_SUPPLIER] == "tibber"
 
 
+async def test_reconfigure_flow_updates_existing_entry(
+    hass: HomeAssistant, mock_entry: MockConfigEntry, mock_epex
+) -> None:
+    """Reconfigure re-runs supplier + tariff steps and updates the same entry."""
+    mock_entry.add_to_hass(hass)
+    assert await hass.config_entries.async_setup(mock_entry.entry_id)
+    await hass.async_block_till_done()
+
+    result = await mock_entry.start_reconfigure_flow(hass)
+    assert result["type"] is FlowResultType.FORM
+    assert result["step_id"] == "reconfigure"
+
+    result = await hass.config_entries.flow.async_configure(
+        result["flow_id"], {CONF_SUPPLIER: MANUAL}
+    )
+    assert result["type"] is FlowResultType.FORM
+    assert result["step_id"] == "reconfigure_tariff"
+
+    new_values = {**VALUES, CONF_VAT: 0.09}
+    result = await hass.config_entries.flow.async_configure(
+        result["flow_id"], new_values
+    )
+    await hass.async_block_till_done()
+
+    assert result["type"] is FlowResultType.ABORT
+    assert result["reason"] == "reconfigure_successful"
+    assert mock_entry.options[CONF_VAT] == 0.09
+
+
 async def test_single_instance_allowed(
     hass: HomeAssistant, mock_entry: MockConfigEntry
 ) -> None:

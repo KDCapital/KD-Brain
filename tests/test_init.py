@@ -10,7 +10,10 @@ from pytest_homeassistant_custom_component.test_util.aiohttp import AiohttpClien
 
 from custom_components.kd_brain.const import DOMAIN, ISSUE_PRICE_SOURCE_UNAVAILABLE
 from custom_components.kd_brain.data.sources.epexprijzen import API_URL
-from custom_components.kd_brain.services import SERVICE_RECALCULATE
+from custom_components.kd_brain.services import (
+    SERVICE_GENERATE_DASHBOARD,
+    SERVICE_RECALCULATE,
+)
 
 
 async def test_setup_and_unload(
@@ -44,6 +47,30 @@ async def test_recalculate_service_refreshes(
     await hass.services.async_call(DOMAIN, SERVICE_RECALCULATE, blocking=True)
     await hass.async_block_till_done()
     assert len(mock_epex.mock_calls) > calls_before
+
+
+async def test_generate_dashboard_service_returns_cards(
+    hass: HomeAssistant, mock_entry: MockConfigEntry, mock_epex: AiohttpClientMocker
+) -> None:
+    """The dashboard service returns a Lovelace config built from real entities."""
+    mock_entry.add_to_hass(hass)
+    assert await hass.config_entries.async_setup(mock_entry.entry_id)
+    await hass.async_block_till_done()
+
+    response = await hass.services.async_call(
+        DOMAIN,
+        SERVICE_GENERATE_DASHBOARD,
+        {"entry_id": mock_entry.entry_id},
+        blocking=True,
+        return_response=True,
+    )
+    assert response is not None
+    dashboard = response["dashboard"]
+    cards = dashboard["views"][0]["cards"]
+    assert any(card["title"] == "Prijzen" for card in cards)
+    price_card = next(card for card in cards if card["title"] == "Prijzen")
+    assert "sensor.kd_brain_current_price" in price_card["entities"]
+    assert "binary_sensor.kd_brain_price_is_low" in price_card["entities"]
 
 
 async def test_setup_failure_creates_repair_issue(

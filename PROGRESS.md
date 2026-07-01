@@ -6,7 +6,7 @@
 
 **Legenda:** ✅ klaar · 🟡 in uitvoering · ⬜ gepland · 🔒 geblokkeerd/afhankelijk
 
-**Laatst bijgewerkt:** 2026-07-01 · **Huidige release:** M6 (EV slim laden + warmtepomp-optimalisatie) · **Versie:** 0.6.0
+**Laatst bijgewerkt:** 2026-07-01 · **Huidige release:** M7 (Dashboards + AI-ready + Gold) · **Versie:** 0.7.0
 
 ---
 
@@ -20,7 +20,7 @@
 | **M4** | Safety + actuators (echte sturing) | ✅ | Safety gate (SOC/vermogen/anti-oscillatie/throttle/hysterese), entity-actuator (number.set_value), observe→active opt-in |
 | **M5** | Uitbreiding | ✅ | Peak shaving + backup-reserve, NL-regelgeving (saldering 2026/2027/2029), PV-forecast (Forecaster-interface), optionele MILP (highspy, lazy + fallback) |
 | **M6** | EV & warmtepomp | ✅ | EV slim laden (planner + IEC 61851-safety + actuator) en warmtepomp-optimalisatie (stooklijn-offset + anti short-cycle-safety + actuator) |
-| **M7** | Dashboards + AI-ready + Gold | ⬜ | Auto-dashboards, `Forecaster`-interfaces voor ML, Quality Scale Gold |
+| **M7** | Dashboards + AI-ready + Gold | ✅ | Auto-dashboard-service, reconfigure-flow, entity-categorieën, optimizer-benchmarks, Quality Scale Gold-checklist compleet |
 
 ---
 
@@ -115,14 +115,16 @@
 | Services | 🟡 (recalculate) | M1+ |
 | Events | ✅ (prices_updated) | M1 |
 | NL-regelgeving profielen (2026/2027/2029) | ✅ | M5 |
-| Auto-dashboards | ⬜ | M7 |
-| Quality Scale | 🟡 Bronze in zicht | doorlopend |
+| Auto-dashboards (`kd_brain.generate_dashboard`) | ✅ | M7 |
+| Reconfigure-flow | ✅ | M7 |
+| Optimizer-benchmarks | ✅ | M7 |
+| Quality Scale | ✅ Gold-checklist compleet | M7 |
 
 ---
 
 ## Kwaliteit & schaalbaarheid (doorlopende doelen)
-- ⬜ Quality Scale: Bronze → Silver → Gold → Platinum (zie `docs/quality_scale.md`)
-- 🟡 Volledige type hints / mypy strict (M1 clean; uitbreiden per mijlpaal)
+- ✅ Quality Scale: Bronze/Silver/Gold compleet (zie `docs/quality_scale.md`); Platinum openstaand
+- 🟡 Volledige type hints / mypy strict (clean over alle modules; uitbreiden per mijlpaal)
 - 🟡 Test-coverage hoog houden (M1: 95%)
-- ⬜ Benchmark-tests voor de optimizer (M5+)
+- ✅ Benchmark-tests voor de optimizer (`tests/test_benchmarks.py`, M7)
 - ⬜ HACS default repository → uiteindelijk HA Core

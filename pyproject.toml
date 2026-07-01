@@ -1,6 +1,6 @@
 [project]
 name = "kd-brain"
-version = "0.6.0"
+version = "0.7.0"
 description = "KD Brain — open-source Home Energy Management System (HEMS) for the Netherlands, built for Home Assistant."
 readme = "README.md"
 license = { text = "MIT" }

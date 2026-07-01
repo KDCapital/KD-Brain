@@ -9,6 +9,7 @@ from homeassistant.components.binary_sensor import (
     BinarySensorDeviceClass,
     BinarySensorEntity,
 )
+from homeassistant.const import EntityCategory
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
 from homeassistant.util import dt as dt_util
@@ -89,6 +90,7 @@ class KDBrainActiveControlBinarySensor(KDBrainActuationEntity, BinarySensorEntit
     """On when KD Brain is allowed to actively steer hardware."""
 
     _attr_translation_key = "active_control"
+    _attr_entity_category = EntityCategory.DIAGNOSTIC
 
     def __init__(self, coordinator: KDBrainActuationCoordinator) -> None:
         """Initialise the binary sensor."""
@@ -104,6 +106,7 @@ class KDBrainSafetyInterventionBinarySensor(KDBrainActuationEntity, BinarySensor
     """On when the safety layer clamped or blocked the intended action."""
 
     _attr_translation_key = "safety_intervened"
+    _attr_entity_category = EntityCategory.DIAGNOSTIC
 
     def __init__(self, coordinator: KDBrainActuationCoordinator) -> None:
         """Initialise the binary sensor."""

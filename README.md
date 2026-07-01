@@ -10,10 +10,9 @@ EV-laden en warmtepompen tot één slim, uitlegbaar energiebeheersysteem. Het ne
 op basis van een echte optimalisatie-engine — geen losse `if`-statements — en je kunt voor elke
 beslissing zien **waarom** die genomen is.
 
-> ⚠️ **Status: in actieve ontwikkeling (M1 — Foundation + prijzen).**
-> De huidige release levert de fundering: dynamische EPEX-prijzen (uur + kwartier) met volledige
-> all-in tariefopbouw. Sturing van hardware (batterij/PV/EV/warmtepomp) volgt in latere mijlpalen
-> en is **uit** by default (KD Brain start altijd in veilige *observe-only* modus).
+> ⚠️ **Status: in actieve ontwikkeling (M7 — Dashboards + AI-ready + Quality Scale Gold).**
+> Sturing van hardware (batterij/PV/EV/warmtepomp) is altijd **uit** by default (KD Brain start
+> altijd in veilige *observe-only* modus) en moet expliciet worden aangezet.
 
 ## Functies (M1)
 
@@ -41,6 +40,10 @@ beslissing zien **waarom** die genomen is.
   `number`-besturingsentiteit. Elke schrijfactie passeert een verplichte safety-poort: SOC-grenzen,
   vermogensbegrenzing, anti-oscillatie (min-dwell), write-throttle en hysterese. Volledig uitlegbaar
   via de sensor **Laatste sturing**.
+- 📐 **Auto-gegenereerd dashboard** (M7): de service `kd_brain.generate_dashboard` bouwt een
+  Lovelace-dashboard op basis van de entiteiten die je daadwerkelijk hebt geconfigureerd — zie
+  [`docs/dashboard.md`](docs/dashboard.md). Plus een **reconfigure-flow** om leverancier/tarief
+  later aan te passen zonder de integratie te verwijderen.
 
 ## Roadmap
 
@@ -52,7 +55,7 @@ beslissing zien **waarom** die genomen is.
 | **M4** ✅ | Safety layer + actuators — echte sturing van de batterij (opt-in) |
 | **M5** ✅ | Peak shaving, backup-reserve, NL-regelgeving 2026/2027/2029, PV-forecast, optionele MILP |
 | **M6** ✅ | EV slim laden (IEC 61851) + warmtepomp-optimalisatie (stooklijn-offset), beide opt-in |
-| M7 | Dashboards, AI-ready interfaces, Quality Scale Gold |
+| **M7** ✅ | Auto-dashboard-service, reconfigure-flow, entity-categorieën, optimizer-benchmarks, Quality Scale Gold |
 
 Zie [het architectuurplan](#architectuur) en `CHANGELOG.md` voor details.
 

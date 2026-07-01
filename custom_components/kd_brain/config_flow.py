@@ -630,9 +630,7 @@ def _heatpump_schema(values: Mapping[str, Any]) -> vol.Schema:
             vol.Optional(
                 CONF_HEATPUMP_OFFSET_CONTROL_ENTITY,
                 description={
-                    "suggested_value": values.get(
-                        CONF_HEATPUMP_OFFSET_CONTROL_ENTITY
-                    )
+                    "suggested_value": values.get(CONF_HEATPUMP_OFFSET_CONTROL_ENTITY)
                 },
             ): EntitySelector(EntitySelectorConfig(domain="number")),
             vol.Required(
@@ -684,6 +682,32 @@ class KDBrainConfigFlow(ConfigFlow, domain=DOMAIN):
         defaults = _apply_provider(_DEFAULTS, self._supplier)
         return self.async_show_form(
             step_id="tariff", data_schema=_values_schema(defaults)
+        )
+
+    async def async_step_reconfigure(
+        self, user_input: dict[str, Any] | None = None
+    ) -> ConfigFlowResult:
+        """Step 1 of reconfiguration: re-pick the energy supplier."""
+        entry = self._get_reconfigure_entry()
+        if user_input is not None:
+            self._supplier = user_input[CONF_SUPPLIER]
+            return await self.async_step_reconfigure_tariff()
+        current = entry.options.get(CONF_SUPPLIER, MANUAL)
+        return self.async_show_form(
+            step_id="reconfigure", data_schema=_supplier_schema(current)
+        )
+
+    async def async_step_reconfigure_tariff(
+        self, user_input: dict[str, Any] | None = None
+    ) -> ConfigFlowResult:
+        """Step 2 of reconfiguration: confirm/adjust tariff values and save."""
+        entry = self._get_reconfigure_entry()
+        if user_input is not None:
+            options = {**entry.options, CONF_SUPPLIER: self._supplier, **user_input}
+            return self.async_update_reload_and_abort(entry, options=options)
+        defaults = _apply_provider({**_DEFAULTS, **entry.options}, self._supplier)
+        return self.async_show_form(
+            step_id="reconfigure_tariff", data_schema=_values_schema(defaults)
         )
 
     @staticmethod

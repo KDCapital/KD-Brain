@@ -30,11 +30,17 @@ This document tracks progress against the [Integration Quality Scale](https://de
 
 ## Gold — polish (M5–M7)
 
-- [ ] Reconfigure flow
-- [ ] Entity categories and disabled-by-default for advanced entities
-- [ ] Stale-state handling and availability for every entity
-- [ ] Comprehensive documentation and examples
-- [ ] Benchmarks for the optimization engine
+- [x] Reconfigure flow (re-run supplier/tariff steps against the existing entry)
+- [x] Entity categories and disabled-by-default for advanced entities (raw
+      market/feed-in price, price-data curve, active strategy, last actuation,
+      active control and safety-intervened are `diagnostic`)
+- [x] Stale-state handling and availability for every entity (all entities are
+      `CoordinatorEntity` subclasses; `available` follows
+      `coordinator.last_update_success`)
+- [x] Comprehensive documentation and examples (README, `docs/dashboard.md`)
+- [x] Benchmarks for the optimization engine (heuristic + optional MILP,
+      48h/15-min horizon, `tests/test_benchmarks.py`)
+- [x] Auto-generated dashboard (`kd_brain.generate_dashboard` service)
 
 ## Platinum — excellence (post-Gold)
 

@@ -23,6 +23,29 @@
           "price_low_threshold": "Drempel lage prijs (all-in)",
           "update_interval_minutes": "Update-interval (minuten)"
         }
+      },
+      "reconfigure": {
+        "title": "Kies je energieleverancier",
+        "description": "Kies je leverancier om de tariefwaarden automatisch vooraf in te vullen, of kies \"Anders / handmatig\" om alles zelf in te voeren.",
+        "data": {
+          "supplier": "Energieleverancier"
+        }
+      },
+      "reconfigure_tariff": {
+        "title": "Tariefgegevens",
+        "description": "Pas aan wat afwijkt van je contract. Al het overige (apparaten, strategieën, sturing) blijft onder Configureren → Opties.",
+        "data": {
+          "price_source": "Prijsbron",
+          "price_interval": "Weergaveresolutie",
+          "regulation_profile": "Regelgevingsprofiel",
+          "energy_tax": "Energiebelasting (excl. BTW)",
+          "supplier_markup": "Leveranciersopslag (excl. BTW)",
+          "feed_in_markup": "Terugleverkosten (excl. BTW)",
+          "monthly_fee": "Vaste leveringskosten per maand",
+          "vat": "BTW (fractie, bijv. 0,21)",
+          "price_low_threshold": "Drempel lage prijs (all-in)",
+          "update_interval_minutes": "Update-interval (minuten)"
+        }
       }
     },
     "abort": {
@@ -223,6 +246,16 @@
     "recalculate": {
       "name": "Herberekenen",
       "description": "Laat KD Brain direct de nieuwste prijzen ophalen en opnieuw berekenen."
+    },
+    "generate_dashboard": {
+      "name": "Dashboard genereren",
+      "description": "Bouw een automatisch gegenereerd Lovelace-dashboard op basis van de geconfigureerde entiteiten.",
+      "fields": {
+        "entry_id": {
+          "name": "Config entry",
+          "description": "Voor welke KD Brain config entry het dashboard gebouwd moet worden. Standaard de enige (of eerste) geladen entry."
+        }
+      }
     }
   },
   "issues": {

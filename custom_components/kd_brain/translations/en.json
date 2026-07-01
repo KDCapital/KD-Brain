@@ -23,6 +23,29 @@
           "price_low_threshold": "Low-price threshold (all-in)",
           "update_interval_minutes": "Update interval (minutes)"
         }
+      },
+      "reconfigure": {
+        "title": "Choose your energy supplier",
+        "description": "Pick your supplier to pre-fill the tariff values automatically, or choose \"Anders / handmatig\" to enter everything yourself.",
+        "data": {
+          "supplier": "Energy supplier"
+        }
+      },
+      "reconfigure_tariff": {
+        "title": "Tariff details",
+        "description": "Adjust anything that differs from your contract. Everything else (devices, strategies, control) stays under Configure → Options.",
+        "data": {
+          "price_source": "Price source",
+          "price_interval": "Display resolution",
+          "regulation_profile": "Regulation profile",
+          "energy_tax": "Energy tax (excl. VAT)",
+          "supplier_markup": "Supplier markup (excl. VAT)",
+          "feed_in_markup": "Feed-in cost (excl. VAT)",
+          "monthly_fee": "Monthly standing charge",
+          "vat": "VAT (fraction, e.g. 0.21)",
+          "price_low_threshold": "Low-price threshold (all-in)",
+          "update_interval_minutes": "Update interval (minutes)"
+        }
       }
     },
     "abort": {
@@ -273,6 +296,16 @@
     "recalculate": {
       "name": "Recalculate",
       "description": "Force KD Brain to fetch the latest prices and recompute immediately."
+    },
+    "generate_dashboard": {
+      "name": "Generate dashboard",
+      "description": "Build an auto-generated Lovelace dashboard from the currently configured entities.",
+      "fields": {
+        "entry_id": {
+          "name": "Config entry",
+          "description": "Which KD Brain config entry to build the dashboard for. Defaults to the only (or first) loaded entry."
+        }
+      }
     }
   },
   "issues": {

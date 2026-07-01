@@ -6,6 +6,25 @@ All notable changes to KD Brain are documented in this file. The format is based
 
 ## [Unreleased]
 
+### Added — M7: Dashboards, reconfigure flow & Gold polish
+- **Auto-generated dashboard**: new `kd_brain.generate_dashboard` response
+  service builds a Lovelace dashboard (views/cards) from whichever entities
+  are actually configured for an entry — no dead cards for unconfigured
+  devices. See `docs/dashboard.md`.
+- **Reconfigure flow**: re-run the supplier and tariff steps against an
+  existing config entry (`Settings → Devices & services → Reconfigure`)
+  instead of removing and re-adding the integration.
+- **Entity categories**: raw market/feed-in price, the price-data curve
+  sensor, active strategy, last actuation, active control and
+  safety-intervened are now marked `diagnostic`, keeping the primary
+  dashboard focused on actionable entities.
+- Quality Scale: Gold checklist completed (reconfigure flow, entity
+  categories, availability via `CoordinatorEntity`, documentation,
+  optimizer benchmarks).
+- New optimizer benchmark tests (`tests/test_benchmarks.py`) guarding the
+  heuristic and optional MILP optimiser's runtime over a 48h/15-minute
+  horizon.
+
 ### Added — M6: EV & heat pump optimization (opt-in)
 - **EV smart charging** (M6a): reads an EV charger's connected/power/SOC entities, plans a charge
   current from cheap prices, solar surplus and a target SOC, and enforces IEC 61851 (0 A or at

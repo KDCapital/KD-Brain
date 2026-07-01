@@ -16,6 +16,7 @@ from homeassistant.components.sensor import (
 )
 from homeassistant.const import (
     PERCENTAGE,
+    EntityCategory,
     UnitOfElectricCurrent,
     UnitOfEnergy,
     UnitOfPower,
@@ -163,6 +164,7 @@ SENSORS: tuple[KDBrainPriceSensorDescription, ...] = (
         native_unit_of_measurement=CURRENCY_PER_KWH,
         state_class=SensorStateClass.MEASUREMENT,
         suggested_display_precision=PRICE_PRECISION,
+        entity_category=EntityCategory.DIAGNOSTIC,
         value_fn=_current_market,
     ),
     KDBrainPriceSensorDescription(
@@ -171,6 +173,7 @@ SENSORS: tuple[KDBrainPriceSensorDescription, ...] = (
         native_unit_of_measurement=CURRENCY_PER_KWH,
         state_class=SensorStateClass.MEASUREMENT,
         suggested_display_precision=PRICE_PRECISION,
+        entity_category=EntityCategory.DIAGNOSTIC,
         value_fn=_current_feed_in,
     ),
     KDBrainPriceSensorDescription(
@@ -207,6 +210,7 @@ SENSORS: tuple[KDBrainPriceSensorDescription, ...] = (
         translation_key="price_data",
         native_unit_of_measurement=CURRENCY_PER_KWH,
         suggested_display_precision=PRICE_PRECISION,
+        entity_category=EntityCategory.DIAGNOSTIC,
         value_fn=_current_all_in,
         attr_fn=_data_attributes,
     ),
@@ -412,6 +416,7 @@ class KDBrainActiveStrategySensor(KDBrainOptimizationEntity, SensorEntity):
     """The strategy that produced the current recommendation."""
 
     _attr_translation_key = "active_strategy"
+    _attr_entity_category = EntityCategory.DIAGNOSTIC
 
     def __init__(self, coordinator: KDBrainOptimizationCoordinator) -> None:
         """Initialise the sensor."""
@@ -522,6 +527,7 @@ class KDBrainLastActuationSensor(KDBrainActuationEntity, SensorEntity):
     """The safety-approved action and whether it was actually applied."""
 
     _attr_translation_key = "last_actuation"
+    _attr_entity_category = EntityCategory.DIAGNOSTIC
 
     def __init__(self, coordinator: KDBrainActuationCoordinator) -> None:
         """Initialise the sensor."""
