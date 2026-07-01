@@ -52,6 +52,10 @@ from .engine.state import build_system_state
 from .ev.config import EvConfig
 from .ev.planner import EvResult, plan_ev
 from .ev.safety import ev_safety
+from .heatpump.actuator import HeatPumpActuator
+from .heatpump.config import HpConfig
+from .heatpump.planner import HpResult, plan_heatpump
+from .heatpump.safety import hp_safety, to_tenths
 from .safety.config import SafetyConfig
 from .safety.gate import evaluate
 from .safety.state import ControlState
@@ -433,4 +437,88 @@ class KDBrainEvCoordinator(DataUpdateCoordinator[EvResult | None]):
     @callback
     def _handle_upstream(self) -> None:
         """Schedule an EV planning pass on an upstream update."""
+        self.hass.async_create_task(self.async_request_refresh())
+
+
+class KDBrainHeatPumpCoordinator(DataUpdateCoordinator[HpResult | None]):
+    """Plans a heat pump setpoint offset and (in active mode) writes it.
+
+    Mirrors the EV pipeline but for a heat pump: it derives a small heating-curve
+    offset from the price curve, applies the clamp / write-throttle / anti
+    short-cycle safety checks, and writes the offset to the configured control
+    entity only in active mode.
+    """
+
+    def __init__(
+        self,
+        hass: HomeAssistant,
+        entry: ConfigEntry,
+        price_coordinator: KDBrainPriceCoordinator,
+        telemetry_coordinator: KDBrainTelemetryCoordinator,
+    ) -> None:
+        """Initialise from the price and telemetry coordinators."""
+        super().__init__(
+            hass,
+            _LOGGER,
+            name=f"{DOMAIN}_heatpump",
+            update_interval=None,
+            config_entry=entry,
+        )
+        self._price = price_coordinator
+        self._telemetry = telemetry_coordinator
+        self._control_state = ControlState()
+        config = HpConfig.from_options(dict(entry.options))
+        self._actuator = (
+            HeatPumpActuator(config.control_entity) if config.control_entity else None
+        )
+
+    @property
+    def hp_config(self) -> HpConfig:
+        """Return the heat pump config built from the current entry options."""
+        assert self.config_entry is not None
+        return HpConfig.from_options(dict(self.config_entry.options))
+
+    async def _async_update_data(self) -> HpResult | None:
+        """Plan the setpoint offset and apply it when active."""
+        config = self.hp_config
+        if not config.enabled:
+            return None
+        prices = self._price.data
+        if prices is None or prices.is_empty:
+            return None
+        telemetry = self._telemetry.data or Telemetry()
+        now = dt_util.utcnow()
+        state = build_system_state(now, prices, telemetry)
+
+        plan = plan_heatpump(state, config)
+        offset, write, reasons = hp_safety(
+            plan.offset_c, config, self._control_state, now
+        )
+
+        written = False
+        if config.is_active and self._actuator is not None and write:
+            await self._actuator.async_apply(self.hass, offset)
+            self._control_state.record(to_tenths(offset), now)
+            written = True
+
+        return HpResult(
+            ts=now,
+            mode=config.control_mode,
+            power_w=telemetry.heat_pump.power_w,
+            offset_c=offset,
+            written=written,
+            reasons=(plan.reason, *reasons),
+        )
+
+    @callback
+    def async_setup_listeners(self) -> list[CALLBACK_TYPE]:
+        """Re-plan whenever prices or telemetry update."""
+        return [
+            self._price.async_add_listener(self._handle_upstream),
+            self._telemetry.async_add_listener(self._handle_upstream),
+        ]
+
+    @callback
+    def _handle_upstream(self) -> None:
+        """Schedule a heat pump planning pass on an upstream update."""
         self.hass.async_create_task(self.async_request_refresh())

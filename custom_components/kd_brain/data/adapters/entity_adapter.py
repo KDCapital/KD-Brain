@@ -26,6 +26,7 @@ from ...const import (
     CONF_EV_POWER_ENTITY,
     CONF_EV_SOC_ENTITY,
     CONF_GRID_POWER_ENTITY,
+    CONF_HEATPUMP_POWER_ENTITY,
     CONF_IMBALANCE_PRICE_ENTITY,
     CONF_IMBALANCE_UNIT,
     CONF_LOAD_POWER_ENTITY,
@@ -38,6 +39,7 @@ from ..models import (
     BatteryState,
     EvState,
     GridState,
+    HeatPumpState,
     LoadState,
     PvState,
     Telemetry,
@@ -78,6 +80,7 @@ class EntityAdapter:
         self._ev_connected = options.get(CONF_EV_CONNECTED_ENTITY)
         self._ev_power = options.get(CONF_EV_POWER_ENTITY)
         self._ev_soc = options.get(CONF_EV_SOC_ENTITY)
+        self._heatpump_power = options.get(CONF_HEATPUMP_POWER_ENTITY)
 
     @property
     def entity_ids(self) -> list[str]:
@@ -90,6 +93,7 @@ class EntityAdapter:
             self._ev_connected,
             self._ev_power,
             self._ev_soc,
+            self._heatpump_power,
             *self._soc,
             *self._power,
         ]
@@ -111,6 +115,9 @@ class EntityAdapter:
                 connected=self._bool(hass, self._ev_connected),
                 charging_power_w=self._power_w(hass, self._ev_power),
                 soc=self._numeric(hass, self._ev_soc),
+            ),
+            heat_pump=HeatPumpState(
+                power_w=self._power_w(hass, self._heatpump_power),
             ),
             imbalance_price=self._imbalance_price(hass),
         )

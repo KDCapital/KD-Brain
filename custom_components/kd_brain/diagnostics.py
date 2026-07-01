@@ -49,6 +49,7 @@ async def async_get_config_entry_diagnostics(
     decision = optimization.data
     actuation = entry.runtime_data.actuation_coordinator.data
     ev = entry.runtime_data.ev_coordinator.data
+    heatpump = entry.runtime_data.heatpump_coordinator.data
 
     return {
         "entry": {
@@ -70,4 +71,5 @@ async def async_get_config_entry_diagnostics(
         "actuation": actuation.as_dict() if actuation is not None else None,
         "forecast": optimization.forecast.as_dict(),
         "ev": ev.as_dict() if ev is not None else None,
+        "heatpump": heatpump.as_dict() if heatpump is not None else None,
     }

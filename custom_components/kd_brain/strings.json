@@ -39,7 +39,17 @@
           "devices": "Configure devices (telemetry)",
           "strategy": "Strategies, economics & battery limits",
           "control": "Control & safety",
-          "ev": "EV smart charging"
+          "ev": "EV smart charging",
+          "heatpump": "Heat pump optimization"
+        }
+      },
+      "heatpump": {
+        "title": "Heat pump optimization",
+        "description": "Shift heating towards cheap hours by nudging the heating curve (setpoint offset) up when electricity is cheap and down when it is expensive. Anti short-cycling and a write-throttle protect the compressor. Steering happens only in active control mode.",
+        "data": {
+          "enable_heatpump": "Enable heat pump optimization",
+          "heatpump_offset_control_entity": "Heating-curve offset control entity (°C)",
+          "heatpump_max_offset": "Maximum setpoint offset (°C)"
         }
       },
       "ev": {
@@ -102,6 +112,7 @@
           "ev_connected_entity": "EV connected sensor (optional)",
           "ev_power_entity": "EV charging power sensor (optional)",
           "ev_soc_entity": "EV state-of-charge sensor (optional)",
+          "heatpump_power_entity": "Heat pump power sensor (optional)",
           "imbalance_price_entity": "Imbalance price sensor (optional)",
           "imbalance_unit": "Imbalance price unit"
         }
@@ -187,6 +198,7 @@
       "imbalance_price": { "name": "Imbalance price" },
       "pv_forecast_power": { "name": "Solar forecast power" },
       "pv_forecast_today": { "name": "Solar forecast today" },
+      "heat_pump_power": { "name": "Heat pump power" },
       "recommended_action": {
         "name": "Recommended action",
         "state": {
@@ -197,7 +209,8 @@
       },
       "active_strategy": { "name": "Active strategy" },
       "last_actuation": { "name": "Last actuation" },
-      "recommended_ev_current": { "name": "Recommended EV current" }
+      "recommended_ev_current": { "name": "Recommended EV current" },
+      "recommended_heatpump_offset": { "name": "Recommended heat pump offset" }
     },
     "binary_sensor": {
       "price_low": { "name": "Price is low" },

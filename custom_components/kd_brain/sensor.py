@@ -19,6 +19,7 @@ from homeassistant.const import (
     UnitOfElectricCurrent,
     UnitOfEnergy,
     UnitOfPower,
+    UnitOfTemperature,
 )
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
@@ -30,7 +31,9 @@ from .const import (
     CONF_BATTERY_POWER_ENTITIES,
     CONF_BATTERY_SOC_ENTITIES,
     CONF_ENABLE_EV,
+    CONF_ENABLE_HEATPUMP,
     CONF_GRID_POWER_ENTITY,
+    CONF_HEATPUMP_POWER_ENTITY,
     CONF_IMBALANCE_PRICE_ENTITY,
     CONF_LOAD_POWER_ENTITY,
     CONF_PRICE_INTERVAL,
@@ -45,6 +48,7 @@ from .const import (
 from .coordinator import (
     KDBrainActuationCoordinator,
     KDBrainEvCoordinator,
+    KDBrainHeatPumpCoordinator,
     KDBrainOptimizationCoordinator,
     KDBrainPriceCoordinator,
     KDBrainTelemetryCoordinator,
@@ -54,6 +58,7 @@ from .engine.decision import BatteryAction
 from .entity import (
     KDBrainActuationEntity,
     KDBrainEvEntity,
+    KDBrainHeatPumpEntity,
     KDBrainOptimizationEntity,
     KDBrainPriceEntity,
     KDBrainTelemetryEntity,
@@ -241,6 +246,9 @@ async def async_setup_entry(
     if options.get(CONF_ENABLE_EV):
         entities.append(KDBrainEvCurrentSensor(runtime.ev_coordinator))
 
+    if options.get(CONF_ENABLE_HEATPUMP):
+        entities.append(KDBrainHeatPumpOffsetSensor(runtime.heatpump_coordinator))
+
     async_add_entities(entities)
 
 
@@ -343,6 +351,15 @@ TELEMETRY_SENSORS: tuple[KDBrainTelemetrySensorDescription, ...] = (
             else round(t.imbalance_price, PRICE_PRECISION)
         ),
         required_keys=(CONF_IMBALANCE_PRICE_ENTITY,),
+    ),
+    KDBrainTelemetrySensorDescription(
+        key="heat_pump_power",
+        translation_key="heat_pump_power",
+        device_class=SensorDeviceClass.POWER,
+        native_unit_of_measurement=UnitOfPower.WATT,
+        state_class=SensorStateClass.MEASUREMENT,
+        value_fn=lambda t: _round1(t.heat_pump.power_w),
+        required_keys=(CONF_HEATPUMP_POWER_ENTITY,),
     ),
 )
 
@@ -472,6 +489,31 @@ class KDBrainEvCurrentSensor(KDBrainEvEntity, SensorEntity):
     @property
     def extra_state_attributes(self) -> dict[str, Any] | None:
         """Expose the EV mode, whether it was written and the reasons."""
+        result = self.coordinator.data
+        return None if result is None else result.as_dict()
+
+
+class KDBrainHeatPumpOffsetSensor(KDBrainHeatPumpEntity, SensorEntity):
+    """The recommended heat pump setpoint offset (with reasoning as attributes)."""
+
+    _attr_translation_key = "recommended_heatpump_offset"
+    _attr_device_class = SensorDeviceClass.TEMPERATURE
+    _attr_native_unit_of_measurement = UnitOfTemperature.CELSIUS
+    _attr_state_class = SensorStateClass.MEASUREMENT
+
+    def __init__(self, coordinator: KDBrainHeatPumpCoordinator) -> None:
+        """Initialise the sensor."""
+        super().__init__(coordinator, "recommended_heatpump_offset")
+
+    @property
+    def native_value(self) -> StateType:
+        """Return the recommended setpoint offset in °C."""
+        result = self.coordinator.data
+        return None if result is None else result.offset_c
+
+    @property
+    def extra_state_attributes(self) -> dict[str, Any] | None:
+        """Expose the mode, whether it was written and the reasons."""
         result = self.coordinator.data
         return None if result is None else result.as_dict()
 

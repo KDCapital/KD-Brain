@@ -39,7 +39,17 @@
           "devices": "Apparaten instellen (telemetrie)",
           "strategy": "Strategieën, economie & batterijgrenzen",
           "control": "Sturing & veiligheid",
-          "ev": "EV slim laden"
+          "ev": "EV slim laden",
+          "heatpump": "Warmtepomp-optimalisatie"
+        }
+      },
+      "heatpump": {
+        "title": "Warmtepomp-optimalisatie",
+        "description": "Verschuif verwarming naar goedkope uren door de stooklijn (setpoint-offset) omhoog te duwen als stroom goedkoop is en omlaag als die duur is. Anti short-cycling en een write-throttle beschermen de compressor. Sturing gebeurt alleen in actieve modus.",
+        "data": {
+          "enable_heatpump": "Warmtepomp-optimalisatie inschakelen",
+          "heatpump_offset_control_entity": "Stooklijn-offset besturingsentiteit (°C)",
+          "heatpump_max_offset": "Maximale setpoint-offset (°C)"
         }
       },
       "ev": {
@@ -102,6 +112,7 @@
           "ev_connected_entity": "EV-aangesloten sensor (optioneel)",
           "ev_power_entity": "EV-laadvermogen sensor (optioneel)",
           "ev_soc_entity": "EV-laadtoestand sensor (optioneel)",
+          "heatpump_power_entity": "Warmtepomp-vermogen sensor (optioneel)",
           "imbalance_price_entity": "Onbalansprijs-sensor (optioneel)",
           "imbalance_unit": "Eenheid onbalansprijs"
         }
@@ -187,6 +198,7 @@
       "imbalance_price": { "name": "Onbalansprijs" },
       "pv_forecast_power": { "name": "Zon-voorspelling vermogen" },
       "pv_forecast_today": { "name": "Zon-voorspelling vandaag" },
+      "heat_pump_power": { "name": "Warmtepomp-vermogen" },
       "recommended_action": {
         "name": "Aanbevolen actie",
         "state": {
@@ -197,7 +209,8 @@
       },
       "active_strategy": { "name": "Actieve strategie" },
       "last_actuation": { "name": "Laatste sturing" },
-      "recommended_ev_current": { "name": "Aanbevolen EV-stroom" }
+      "recommended_ev_current": { "name": "Aanbevolen EV-stroom" },
+      "recommended_heatpump_offset": { "name": "Aanbevolen warmtepomp-offset" }
     },
     "binary_sensor": {
       "price_low": { "name": "Prijs is laag" },

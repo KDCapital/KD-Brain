@@ -6,6 +6,19 @@ All notable changes to KD Brain are documented in this file. The format is based
 
 ## [Unreleased]
 
+### Added — M6: EV & heat pump optimization (opt-in)
+- **EV smart charging** (M6a): reads an EV charger's connected/power/SOC entities, plans a charge
+  current from cheap prices, solar surplus and a target SOC, and enforces IEC 61851 (0 A or at
+  least the minimum, never in between) plus anti-oscillation. Writes the current to a `number`
+  control entity only in active mode. New "EV smart charging" options step and a "Recommended EV
+  current" sensor.
+- **Heat pump optimization** (M6b): nudges the heating curve (setpoint offset) up when electricity
+  is cheap and down when it is expensive, shifting demand to cheap hours while keeping the heat
+  pump on its own thermostat. Safety clamps the offset to a configurable °C limit and protects the
+  compressor with a write-throttle and anti short-cycle min-dwell. Writes the offset to a `number`
+  control entity only in active mode. New "Heat pump optimization" options step, a "Heat pump
+  power" telemetry sensor and a "Recommended heat pump offset" sensor.
+
 ### Added — M5: Peak shaving, regulation, forecast & optional MILP
 - Peak shaving and backup reserve strategies (opt-in).
 - NL regulation profiles (saldering 2026 / no saldering 2027 / capacity 2029) that change how

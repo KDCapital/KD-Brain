@@ -51,7 +51,7 @@ beslissing zien **waarom** die genomen is.
 | **M3** ✅ | Optimalisatie-engine + 3 strategieën + uitlegbare beslissing (observe-only) |
 | **M4** ✅ | Safety layer + actuators — echte sturing van de batterij (opt-in) |
 | **M5** ✅ | Peak shaving, backup-reserve, NL-regelgeving 2026/2027/2029, PV-forecast, optionele MILP |
-| M6 | EV & warmtepomp |
+| **M6** ✅ | EV slim laden (IEC 61851) + warmtepomp-optimalisatie (stooklijn-offset), beide opt-in |
 | M7 | Dashboards, AI-ready interfaces, Quality Scale Gold |
 
 Zie [het architectuurplan](#architectuur) en `CHANGELOG.md` voor details.

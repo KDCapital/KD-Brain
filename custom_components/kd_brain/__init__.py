@@ -20,6 +20,7 @@ from .const import PLATFORMS
 from .coordinator import (
     KDBrainActuationCoordinator,
     KDBrainEvCoordinator,
+    KDBrainHeatPumpCoordinator,
     KDBrainOptimizationCoordinator,
     KDBrainPriceCoordinator,
     KDBrainTelemetryCoordinator,
@@ -43,6 +44,7 @@ class KDBrainRuntimeData:
     optimization_coordinator: KDBrainOptimizationCoordinator
     actuation_coordinator: KDBrainActuationCoordinator
     ev_coordinator: KDBrainEvCoordinator
+    heatpump_coordinator: KDBrainHeatPumpCoordinator
 
 
 async def async_setup_entry(hass: HomeAssistant, entry: KDBrainConfigEntry) -> bool:
@@ -75,12 +77,20 @@ async def async_setup_entry(hass: HomeAssistant, entry: KDBrainConfigEntry) -> b
     for unsub in ev_coordinator.async_setup_listeners():
         entry.async_on_unload(unsub)
 
+    heatpump_coordinator = KDBrainHeatPumpCoordinator(
+        hass, entry, price_coordinator, telemetry_coordinator
+    )
+    await heatpump_coordinator.async_refresh()
+    for unsub in heatpump_coordinator.async_setup_listeners():
+        entry.async_on_unload(unsub)
+
     entry.runtime_data = KDBrainRuntimeData(
         price_coordinator=price_coordinator,
         telemetry_coordinator=telemetry_coordinator,
         optimization_coordinator=optimization_coordinator,
         actuation_coordinator=actuation_coordinator,
         ev_coordinator=ev_coordinator,
+        heatpump_coordinator=heatpump_coordinator,
     )
 
     await hass.config_entries.async_forward_entry_setups(entry, PLATFORMS)

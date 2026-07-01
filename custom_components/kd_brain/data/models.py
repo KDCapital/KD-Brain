@@ -183,6 +183,13 @@ class EvState:
 
 
 @dataclass(frozen=True, slots=True)
+class HeatPumpState:
+    """Telemetry for a heat pump."""
+
+    power_w: float | None = None
+
+
+@dataclass(frozen=True, slots=True)
 class Telemetry:
     """A snapshot of all live device telemetry KD Brain can read."""
 
@@ -191,6 +198,7 @@ class Telemetry:
     batteries: tuple[BatteryState, ...] = ()
     load: LoadState = LoadState()
     ev: EvState = EvState()
+    heat_pump: HeatPumpState = HeatPumpState()
     imbalance_price: float | None = None  # current imbalance price, €/kWh
 
     def battery_soc_average(self) -> float | None:
@@ -239,6 +247,9 @@ class Telemetry:
                 "connected": self.ev.connected,
                 "charging_power_w": self.ev.charging_power_w,
                 "soc": self.ev.soc,
+            },
+            "heat_pump": {
+                "power_w": self.heat_pump.power_w,
             },
             "batteries": [
                 {

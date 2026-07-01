@@ -6,7 +6,7 @@
 
 **Legenda:** ✅ klaar · 🟡 in uitvoering · ⬜ gepland · 🔒 geblokkeerd/afhankelijk
 
-**Laatst bijgewerkt:** 2026-06-28 · **Huidige release:** M5 (peak shaving, regelgeving, forecast, optionele MILP) · **Versie:** 0.5.0
+**Laatst bijgewerkt:** 2026-07-01 · **Huidige release:** M6 (EV slim laden + warmtepomp-optimalisatie) · **Versie:** 0.6.0
 
 ---
 
@@ -19,7 +19,7 @@
 | **M3** | Engine + strategieën (dry-run) | ✅ | OptimizationCoordinator, economics (degradatie/roundtrip/marge), heuristische optimizer, `Decision`/uitlegbaarheid, 3 strategieën, aanbevolen-actie sensor |
 | **M4** | Safety + actuators (echte sturing) | ✅ | Safety gate (SOC/vermogen/anti-oscillatie/throttle/hysterese), entity-actuator (number.set_value), observe→active opt-in |
 | **M5** | Uitbreiding | ✅ | Peak shaving + backup-reserve, NL-regelgeving (saldering 2026/2027/2029), PV-forecast (Forecaster-interface), optionele MILP (highspy, lazy + fallback) |
-| **M6** | EV & warmtepomp | ⬜ | Strategieën + safety + actuators voor laden en warmtepomp |
+| **M6** | EV & warmtepomp | ✅ | EV slim laden (planner + IEC 61851-safety + actuator) en warmtepomp-optimalisatie (stooklijn-offset + anti short-cycle-safety + actuator) |
 | **M7** | Dashboards + AI-ready + Gold | ⬜ | Auto-dashboards, `Forecaster`-interfaces voor ML, Quality Scale Gold |
 
 ---
@@ -62,6 +62,8 @@
 | Growatt | telemetrie (entity-adapter) ✅ / sturing (MQTT) ⬜ | 🟡 | M2/M4 |
 | Marstek 5kWh ×2 | telemetrie (entity-adapter) ✅ / sturing (Modbus) ⬜ | 🟡 | M2/M4 |
 | PV-/weersvoorspelling | forecast (entity) | ✅ | M5 |
+| EV-lader | telemetrie (entity-adapter) ✅ / sturing (number) ✅ | ✅ | M6 |
+| Warmtepomp | telemetrie (entity-adapter) ✅ / sturing (number) ✅ | ✅ | M6 |
 
 ### 2. Core / Energy Engine
 | Component | Status | Mijlpaal |
@@ -84,24 +86,24 @@
 | Backup Reserve | ✅ | M5 |
 | Solar Optimization | ⬜ | M5 |
 | Grid Support | ⬜ | M5 |
-| EV Optimization | ⬜ | M6 |
-| Heat Pump Optimization | ⬜ | M6 |
+| EV Optimization | ✅ | M6 |
+| Heat Pump Optimization | ✅ | M6 |
 
 ### 4. Safety Layer
 | Regelset | Status | Mijlpaal |
 |----------|:------:|:--------:|
 | Batterij (SOC, vermogen, anti-oscillatie/min-dwell) | ✅ | M4 |
 | I/O-bescherming (write-throttle, no-write-if-unchanged, hysterese) | ✅ | M4 |
-| EV (IEC61851 6A, load/fase-balans) | ⬜ | M6 |
-| Warmtepomp (min runtime/off, anti short-cycle) | ⬜ | M6 |
+| EV (IEC61851 6A of 0, anti-oscillatie) | ✅ | M6 |
+| Warmtepomp (offset-clamp, write-throttle, anti short-cycle) | ✅ | M6 |
 
 ### 5. Actuator Layer
 | Actuator | Status | Mijlpaal |
 |----------|:------:|:--------:|
 | Generieke entity-actuator (number.set_value) | ✅ | M4 |
 | Marstek/Growatt via control-entiteit (signed power) | ✅ | M4 |
-| EVSE | ⬜ | M6 |
-| Warmtepomp | ⬜ | M6 |
+| EVSE (laadstroom via number.set_value) | ✅ | M6 |
+| Warmtepomp (stooklijn-offset via number.set_value) | ✅ | M6 |
 
 ### Cross-cutting
 | Onderdeel | Status | Mijlpaal |

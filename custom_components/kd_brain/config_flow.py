@@ -44,6 +44,7 @@ from .const import (
     CONF_ENABLE_BACKUP_RESERVE,
     CONF_ENABLE_DYNAMIC_PRICING,
     CONF_ENABLE_EV,
+    CONF_ENABLE_HEATPUMP,
     CONF_ENABLE_PEAK_SHAVING,
     CONF_ENABLE_SELF_CONSUMPTION,
     CONF_ENERGY_TAX,
@@ -57,6 +58,9 @@ from .const import (
     CONF_EV_TARGET_SOC,
     CONF_FEED_IN_MARKUP,
     CONF_GRID_POWER_ENTITY,
+    CONF_HEATPUMP_MAX_OFFSET,
+    CONF_HEATPUMP_OFFSET_CONTROL_ENTITY,
+    CONF_HEATPUMP_POWER_ENTITY,
     CONF_HYSTERESIS_W,
     CONF_IMBALANCE_PRICE_ENTITY,
     CONF_IMBALANCE_UNIT,
@@ -94,6 +98,7 @@ from .const import (
     DEFAULT_ENABLE_BACKUP_RESERVE,
     DEFAULT_ENABLE_DYNAMIC_PRICING,
     DEFAULT_ENABLE_EV,
+    DEFAULT_ENABLE_HEATPUMP,
     DEFAULT_ENABLE_PEAK_SHAVING,
     DEFAULT_ENABLE_SELF_CONSUMPTION,
     DEFAULT_ENERGY_TAX,
@@ -102,6 +107,7 @@ from .const import (
     DEFAULT_EV_PHASES,
     DEFAULT_EV_TARGET_SOC,
     DEFAULT_FEED_IN_MARKUP,
+    DEFAULT_HEATPUMP_MAX_OFFSET,
     DEFAULT_HYSTERESIS_W,
     DEFAULT_IMBALANCE_UNIT,
     DEFAULT_MAX_CHARGE_POWER_W,
@@ -150,6 +156,7 @@ _DEVICE_ENTITY_KEYS = (
     CONF_EV_CONNECTED_ENTITY,
     CONF_EV_POWER_ENTITY,
     CONF_EV_SOC_ENTITY,
+    CONF_HEATPUMP_POWER_ENTITY,
 )
 
 TITLE = "KD Brain"
@@ -367,6 +374,10 @@ def _devices_schema(values: Mapping[str, Any]) -> vol.Schema:
             ): _power_entity(),
             vol.Optional(
                 CONF_EV_SOC_ENTITY, description=suggest(CONF_EV_SOC_ENTITY)
+            ): _power_entity(),
+            vol.Optional(
+                CONF_HEATPUMP_POWER_ENTITY,
+                description=suggest(CONF_HEATPUMP_POWER_ENTITY),
             ): _power_entity(),
             vol.Optional(
                 CONF_IMBALANCE_PRICE_ENTITY,
@@ -608,6 +619,40 @@ def _ev_schema(values: Mapping[str, Any]) -> vol.Schema:
     )
 
 
+def _heatpump_schema(values: Mapping[str, Any]) -> vol.Schema:
+    """Build the heat pump optimization schema, pre-filled with ``values``."""
+    return vol.Schema(
+        {
+            vol.Required(
+                CONF_ENABLE_HEATPUMP,
+                default=values.get(CONF_ENABLE_HEATPUMP, DEFAULT_ENABLE_HEATPUMP),
+            ): BooleanSelector(),
+            vol.Optional(
+                CONF_HEATPUMP_OFFSET_CONTROL_ENTITY,
+                description={
+                    "suggested_value": values.get(
+                        CONF_HEATPUMP_OFFSET_CONTROL_ENTITY
+                    )
+                },
+            ): EntitySelector(EntitySelectorConfig(domain="number")),
+            vol.Required(
+                CONF_HEATPUMP_MAX_OFFSET,
+                default=values.get(
+                    CONF_HEATPUMP_MAX_OFFSET, DEFAULT_HEATPUMP_MAX_OFFSET
+                ),
+            ): NumberSelector(
+                NumberSelectorConfig(
+                    min=0.5,
+                    max=5.0,
+                    step=0.5,
+                    mode=NumberSelectorMode.BOX,
+                    unit_of_measurement="°C",
+                )
+            ),
+        }
+    )
+
+
 class KDBrainConfigFlow(ConfigFlow, domain=DOMAIN):
     """Handle the initial setup of KD Brain."""
 
@@ -668,6 +713,7 @@ class KDBrainOptionsFlow(OptionsFlow):
                 "strategy",
                 "control",
                 "ev",
+                "heatpump",
             ],
         )
 
@@ -773,4 +819,19 @@ class KDBrainOptionsFlow(OptionsFlow):
             return self.async_create_entry(title="", data=saved)
         return self.async_show_form(
             step_id="ev", data_schema=_ev_schema(self.config_entry.options)
+        )
+
+    async def async_step_heatpump(
+        self, user_input: dict[str, Any] | None = None
+    ) -> ConfigFlowResult:
+        """Configure heat pump optimization."""
+        if user_input is not None:
+            saved = {**self.config_entry.options, **user_input}
+            saved[CONF_HEATPUMP_OFFSET_CONTROL_ENTITY] = user_input.get(
+                CONF_HEATPUMP_OFFSET_CONTROL_ENTITY
+            )
+            return self.async_create_entry(title="", data=saved)
+        return self.async_show_form(
+            step_id="heatpump",
+            data_schema=_heatpump_schema(self.config_entry.options),
         )

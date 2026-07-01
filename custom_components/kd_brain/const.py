@@ -49,13 +49,19 @@ CONF_EV_CONNECTED_ENTITY: Final = "ev_connected_entity"
 CONF_EV_POWER_ENTITY: Final = "ev_power_entity"
 CONF_EV_SOC_ENTITY: Final = "ev_soc_entity"
 CONF_EV_CURRENT_CONTROL_ENTITY: Final = "ev_current_control_entity"
+CONF_HEATPUMP_POWER_ENTITY: Final = "heatpump_power_entity"
+CONF_HEATPUMP_OFFSET_CONTROL_ENTITY: Final = "heatpump_offset_control_entity"
 
-# --- EV smart charging (M6) ------------------------------------------------
+# --- EV smart charging (M6a) -----------------------------------------------
 CONF_ENABLE_EV: Final = "enable_ev"
 CONF_EV_MIN_CURRENT_A: Final = "ev_min_current_a"
 CONF_EV_MAX_CURRENT_A: Final = "ev_max_current_a"
 CONF_EV_PHASES: Final = "ev_phases"
 CONF_EV_TARGET_SOC: Final = "ev_target_soc"
+
+# --- Heat pump optimization (M6b) ------------------------------------------
+CONF_ENABLE_HEATPUMP: Final = "enable_heatpump"
+CONF_HEATPUMP_MAX_OFFSET: Final = "heatpump_max_offset"
 
 # Imbalance price unit of the source entity.
 IMBALANCE_UNIT_KWH: Final = "eur_kwh"
@@ -141,6 +147,12 @@ DEFAULT_EV_MAX_CURRENT_A: Final = 16
 DEFAULT_EV_PHASES: Final = 1
 DEFAULT_EV_TARGET_SOC: Final = 80.0  # percent
 EV_GRID_VOLTAGE: Final = 230  # V, for power<->current conversion
+
+# Heat pump defaults — shift the heating curve (stooklijn) by at most a few °C.
+DEFAULT_ENABLE_HEATPUMP: Final = False
+DEFAULT_HEATPUMP_MAX_OFFSET: Final = 2.0  # °C, absolute setpoint-offset limit
+HEATPUMP_GAIN: Final = 5.0  # amplifies price deviation before clamping
+HEATPUMP_OFFSET_STEP: Final = 0.5  # °C, round offsets to this to avoid jitter
 
 # Control & safety defaults — observe-only until the user explicitly opts in.
 DEFAULT_CONTROL_MODE: Final = CONTROL_OBSERVE
