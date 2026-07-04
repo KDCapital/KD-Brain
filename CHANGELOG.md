@@ -6,6 +6,20 @@ All notable changes to KD Brain are documented in this file. The format is based
 
 ## [Unreleased]
 
+### Added — M8: Custom sidebar panel
+- **Custom UI panel**: KD Brain now registers its own **KD Brain** sidebar panel
+  — a self-contained web component (vanilla JS, no build step, no external chart
+  libraries) with five tabs: Overzicht, Prijzen, Batterij, EV & WP and
+  Instellingen. It shows a live energy-flow diagram, the price curve with
+  cheap/expensive shading, battery SOC and power timelines, weekly-energy bars,
+  and EV/heat-pump status with reasoning. See `docs/panel.md`.
+- **In-panel configuration**: a full settings tab reads and writes every option
+  live through new websocket commands (`kd_brain/config/get`,
+  `kd_brain/config/update`, admin only) plus a consolidated `kd_brain/snapshot`
+  command; the classic options flow remains as a fallback.
+- **Setup wizard**: the initial setup now also asks for your devices/sensors and
+  control mode, so you can wire everything up without visiting Options first.
+
 ### Added — M7: Dashboards, reconfigure flow & Gold polish
 - **Auto-generated dashboard**: new `kd_brain.generate_dashboard` response
   service builds a Lovelace dashboard (views/cards) from whichever entities

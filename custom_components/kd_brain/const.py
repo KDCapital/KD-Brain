@@ -11,6 +11,8 @@ from homeassistant.const import Platform
 DOMAIN: Final = "kd_brain"
 MANUFACTURER: Final = "KD Capital"
 MODEL: Final = "KD Brain HEMS"
+# Kept in sync with manifest.json/pyproject.toml; used to cache-bust the panel JS.
+INTEGRATION_VERSION: Final = "0.8.0"
 
 # Platforms shipped in M1 (Foundation + prices). More are added in later milestones.
 PLATFORMS: Final[list[Platform]] = [Platform.SENSOR, Platform.BINARY_SENSOR]

@@ -3,11 +3,13 @@
   "name": "KD Brain",
   "codeowners": ["@KDCapital"],
   "config_flow": true,
+  "dependencies": ["http", "websocket_api"],
+  "after_dependencies": ["recorder", "frontend", "panel_custom"],
   "documentation": "https://github.com/KDCapital/KD-Brain",
   "integration_type": "hub",
   "iot_class": "cloud_polling",
   "issue_tracker": "https://github.com/KDCapital/KD-Brain/issues",
   "requirements": [],
   "single_config_entry": true,
-  "version": "0.7.0"
+  "version": "0.8.0"
 }

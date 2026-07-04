@@ -41,18 +41,14 @@ class HpConfig:
     def from_options(cls, options: dict[str, Any]) -> HpConfig:
         """Build the heat pump config from config entry options."""
         return cls(
-            enabled=bool(
-                options.get(CONF_ENABLE_HEATPUMP, DEFAULT_ENABLE_HEATPUMP)
-            ),
+            enabled=bool(options.get(CONF_ENABLE_HEATPUMP, DEFAULT_ENABLE_HEATPUMP)),
             max_offset=float(
                 options.get(CONF_HEATPUMP_MAX_OFFSET, DEFAULT_HEATPUMP_MAX_OFFSET)
             ),
             control_entity=options.get(CONF_HEATPUMP_OFFSET_CONTROL_ENTITY),
             control_mode=options.get(CONF_CONTROL_MODE, DEFAULT_CONTROL_MODE),
             write_throttle_s=int(
-                options.get(
-                    CONF_WRITE_THROTTLE_SECONDS, DEFAULT_WRITE_THROTTLE_SECONDS
-                )
+                options.get(CONF_WRITE_THROTTLE_SECONDS, DEFAULT_WRITE_THROTTLE_SECONDS)
             ),
             min_dwell_s=int(
                 options.get(CONF_MIN_DWELL_SECONDS, DEFAULT_MIN_DWELL_SECONDS)

@@ -46,6 +46,37 @@
           "price_low_threshold": "Drempel lage prijs (all-in)",
           "update_interval_minutes": "Update-interval (minuten)"
         }
+      },
+      "devices": {
+        "title": "Apparaten & telemetrie (optioneel)",
+        "description": "Koppel je bestaande Home Assistant-sensoren zodat KD Brain ze kan uitlezen. Alle velden zijn optioneel en later aanpasbaar in het paneel of de opties.",
+        "data": {
+          "grid_power_entity": "Netvermogen (met teken: + import, - export)",
+          "pv_power_entity": "Zonne-opwek vermogen",
+          "load_power_entity": "Huishoudelijk verbruik (optioneel; afgeleid indien leeg)",
+          "battery_soc_entities": "Batterij-laadtoestand sensor(en)",
+          "battery_power_entities": "Batterij-vermogen sensor(en) (+ opladen)",
+          "battery_capacity_wh": "Batterijcapaciteit per stuk",
+          "pv_forecast_power_entity": "PV-voorspelling vermogen-sensor (bijv. volgend uur)",
+          "pv_forecast_today_entity": "PV-voorspelling energie vandaag-sensor",
+          "ev_connected_entity": "EV-aangesloten sensor (optioneel)",
+          "ev_power_entity": "EV-laadvermogen sensor (optioneel)",
+          "ev_soc_entity": "EV-laadtoestand sensor (optioneel)",
+          "heatpump_power_entity": "Warmtepomp-vermogen sensor (optioneel)",
+          "imbalance_price_entity": "Onbalansprijs-sensor (optioneel)",
+          "imbalance_unit": "Eenheid onbalansprijs"
+        }
+      },
+      "control": {
+        "title": "Sturing & veiligheid (optioneel)",
+        "description": "Met actieve sturing stuurt KD Brain je batterij aan via de gekozen besturingsentiteit. Dit staat standaard UIT; laat op observe-only voor alleen aanbevelingen zonder sturing. Elke schrijfactie passeert de veiligheidspoort.",
+        "data": {
+          "control_mode": "Besturingsmodus",
+          "battery_power_control_entity": "Batterij-vermogen besturingsentiteit (met teken: + laden, - ontladen)",
+          "write_throttle_seconds": "Minimale tijd tussen schrijfacties",
+          "min_dwell_seconds": "Minimale wachttijd voor richtingomkering",
+          "hysteresis_w": "Hysterese (negeer wijzigingen kleiner dan)"
+        }
       }
     },
     "abort": {

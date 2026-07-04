@@ -10,7 +10,7 @@ EV-laden en warmtepompen tot één slim, uitlegbaar energiebeheersysteem. Het ne
 op basis van een echte optimalisatie-engine — geen losse `if`-statements — en je kunt voor elke
 beslissing zien **waarom** die genomen is.
 
-> ⚠️ **Status: in actieve ontwikkeling (M7 — Dashboards + AI-ready + Quality Scale Gold).**
+> ⚠️ **Status: in actieve ontwikkeling (M8 — eigen KD Brain-paneel in de zijbalk).**
 > Sturing van hardware (batterij/PV/EV/warmtepomp) is altijd **uit** by default (KD Brain start
 > altijd in veilige *observe-only* modus) en moet expliciet worden aangezet.
 
@@ -44,6 +44,12 @@ beslissing zien **waarom** die genomen is.
   Lovelace-dashboard op basis van de entiteiten die je daadwerkelijk hebt geconfigureerd — zie
   [`docs/dashboard.md`](docs/dashboard.md). Plus een **reconfigure-flow** om leverancier/tarief
   later aan te passen zonder de integratie te verwijderen.
+- 🖥️ **Eigen KD Brain-paneel in de zijbalk** (M8): na installatie verschijnt een compleet custom
+  dashboard met vijf tabs (Overzicht · Prijzen · Batterij · EV & WP · Instellingen), een live
+  **energie-flow**-animatie en grafieken voor prijs, SOC, vermogen en week-energie. Je stelt er
+  **alles** direct in — apparaten/sensoren, strategieën, sturing, EV en warmtepomp. Zie
+  [`docs/panel.md`](docs/panel.md). De setup-wizard vraagt nu ook meteen om je sensoren en
+  besturingsmodus.
 
 ## Roadmap
 

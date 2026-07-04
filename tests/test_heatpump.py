@@ -106,9 +106,7 @@ def test_safety_write_throttle_blocks() -> None:
         last_direction="charge",
         last_change_ts=NOW - timedelta(seconds=10),
     )
-    _offset, write, reasons = hp_safety(
-        2.0, _config(write_throttle_s=60), state, NOW
-    )
+    _offset, write, reasons = hp_safety(2.0, _config(write_throttle_s=60), state, NOW)
     assert write is False
     assert any("throttle" in r for r in reasons)
 

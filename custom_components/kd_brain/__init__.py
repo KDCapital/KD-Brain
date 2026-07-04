@@ -25,7 +25,9 @@ from .coordinator import (
     KDBrainPriceCoordinator,
     KDBrainTelemetryCoordinator,
 )
+from .panel import async_register_frontend, async_unregister_frontend
 from .services import async_setup_services, async_unload_services
+from .websocket_api import async_register_websocket_api
 
 type KDBrainConfigEntry = ConfigEntry[KDBrainRuntimeData]
 
@@ -96,6 +98,8 @@ async def async_setup_entry(hass: HomeAssistant, entry: KDBrainConfigEntry) -> b
     await hass.config_entries.async_forward_entry_setups(entry, PLATFORMS)
     entry.async_on_unload(entry.add_update_listener(_async_update_listener))
     async_setup_services(hass)
+    async_register_websocket_api(hass)
+    await async_register_frontend(hass)
     return True
 
 
@@ -104,6 +108,7 @@ async def async_unload_entry(hass: HomeAssistant, entry: KDBrainConfigEntry) -> 
     unloaded = await hass.config_entries.async_unload_platforms(entry, PLATFORMS)
     if unloaded:
         async_unload_services(hass)
+        async_unregister_frontend(hass)
     return unloaded
 
 

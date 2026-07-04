@@ -660,6 +660,7 @@ class KDBrainConfigFlow(ConfigFlow, domain=DOMAIN):
     def __init__(self) -> None:
         """Initialise transient flow state."""
         self._supplier: str = MANUAL
+        self._options: dict[str, Any] = {}
 
     async def async_step_user(
         self, user_input: dict[str, Any] | None = None
@@ -677,12 +678,42 @@ class KDBrainConfigFlow(ConfigFlow, domain=DOMAIN):
     ) -> ConfigFlowResult:
         """Step 2: confirm/adjust the (pre-filled) tariff values."""
         if user_input is not None:
-            options = {CONF_SUPPLIER: self._supplier, **user_input}
-            return self.async_create_entry(title=TITLE, data={}, options=options)
+            self._options = {CONF_SUPPLIER: self._supplier, **user_input}
+            return await self.async_step_devices()
         defaults = _apply_provider(_DEFAULTS, self._supplier)
         return self.async_show_form(
-            step_id="tariff", data_schema=_values_schema(defaults)
+            step_id="tariff", data_schema=_values_schema(defaults), last_step=False
         )
+
+    async def async_step_devices(
+        self, user_input: dict[str, Any] | None = None
+    ) -> ConfigFlowResult:
+        """Step 3: map Home Assistant entities onto KD Brain telemetry (optional)."""
+        if user_input is not None:
+            for key in _DEVICE_ENTITY_KEYS:
+                self._options[key] = user_input.get(key)
+            self._options[CONF_BATTERY_CAPACITY_WH] = user_input.get(
+                CONF_BATTERY_CAPACITY_WH, DEFAULT_BATTERY_CAPACITY_WH
+            )
+            self._options[CONF_IMBALANCE_UNIT] = user_input.get(
+                CONF_IMBALANCE_UNIT, DEFAULT_IMBALANCE_UNIT
+            )
+            return await self.async_step_control()
+        return self.async_show_form(
+            step_id="devices", data_schema=_devices_schema({}), last_step=False
+        )
+
+    async def async_step_control(
+        self, user_input: dict[str, Any] | None = None
+    ) -> ConfigFlowResult:
+        """Step 4: control mode + safety timings (optional), then create."""
+        if user_input is not None:
+            self._options.update(user_input)
+            self._options[CONF_BATTERY_POWER_CONTROL_ENTITY] = user_input.get(
+                CONF_BATTERY_POWER_CONTROL_ENTITY
+            )
+            return self.async_create_entry(title=TITLE, data={}, options=self._options)
+        return self.async_show_form(step_id="control", data_schema=_control_schema({}))
 
     async def async_step_reconfigure(
         self, user_input: dict[str, Any] | None = None

@@ -41,6 +41,14 @@ async def test_user_flow_manual(hass: HomeAssistant, mock_epex) -> None:
     assert result["step_id"] == "tariff"
 
     result = await hass.config_entries.flow.async_configure(result["flow_id"], VALUES)
+    assert result["type"] is FlowResultType.FORM
+    assert result["step_id"] == "devices"
+
+    result = await hass.config_entries.flow.async_configure(result["flow_id"], {})
+    assert result["type"] is FlowResultType.FORM
+    assert result["step_id"] == "control"
+
+    result = await hass.config_entries.flow.async_configure(result["flow_id"], {})
     await hass.async_block_till_done()
 
     assert result["type"] is FlowResultType.CREATE_ENTRY
@@ -49,7 +57,7 @@ async def test_user_flow_manual(hass: HomeAssistant, mock_epex) -> None:
 
 
 async def test_user_flow_supplier_preset(hass: HomeAssistant, mock_epex) -> None:
-    """Choosing a supplier pre-fills its markup on the tariff step."""
+    """Choosing a supplier pre-fills its markup and completes the wizard."""
     result = await hass.config_entries.flow.async_init(
         DOMAIN, context={"source": SOURCE_USER}
     )
@@ -66,9 +74,16 @@ async def test_user_flow_supplier_preset(hass: HomeAssistant, mock_epex) -> None
     )
 
     result = await hass.config_entries.flow.async_configure(result["flow_id"], VALUES)
+    assert result["step_id"] == "devices"
+    result = await hass.config_entries.flow.async_configure(
+        result["flow_id"], {CONF_GRID_POWER_ENTITY: "sensor.grid_power"}
+    )
+    assert result["step_id"] == "control"
+    result = await hass.config_entries.flow.async_configure(result["flow_id"], {})
     await hass.async_block_till_done()
     assert result["type"] is FlowResultType.CREATE_ENTRY
     assert result["options"][CONF_SUPPLIER] == "tibber"
+    assert result["options"][CONF_GRID_POWER_ENTITY] == "sensor.grid_power"
 
 
 async def test_reconfigure_flow_updates_existing_entry(

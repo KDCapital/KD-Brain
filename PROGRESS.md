@@ -6,7 +6,7 @@
 
 **Legenda:** ✅ klaar · 🟡 in uitvoering · ⬜ gepland · 🔒 geblokkeerd/afhankelijk
 
-**Laatst bijgewerkt:** 2026-07-01 · **Huidige release:** M7 (Dashboards + AI-ready + Gold) · **Versie:** 0.7.0
+**Laatst bijgewerkt:** 2026-07-04 · **Huidige release:** M8 (Custom UI paneel) · **Versie:** 0.8.0
 
 ---
 
@@ -21,6 +21,7 @@
 | **M5** | Uitbreiding | ✅ | Peak shaving + backup-reserve, NL-regelgeving (saldering 2026/2027/2029), PV-forecast (Forecaster-interface), optionele MILP (highspy, lazy + fallback) |
 | **M6** | EV & warmtepomp | ✅ | EV slim laden (planner + IEC 61851-safety + actuator) en warmtepomp-optimalisatie (stooklijn-offset + anti short-cycle-safety + actuator) |
 | **M7** | Dashboards + AI-ready + Gold | ✅ | Auto-dashboard-service, reconfigure-flow, entity-categorieën, optimizer-benchmarks, Quality Scale Gold-checklist compleet |
+| **M8** | Custom UI paneel | ✅ | Eigen sidebar-paneel (vanilla-JS web component, 5 tabs), live energie-flow + prijs/SOC/vermogen/week-grafieken, websocket-API (snapshot + config get/update), setup-wizard met apparaten + sturing |
 
 ---
 
@@ -119,6 +120,9 @@
 | Reconfigure-flow | ✅ | M7 |
 | Optimizer-benchmarks | ✅ | M7 |
 | Quality Scale | ✅ Gold-checklist compleet | M7 |
+| Custom sidebar-paneel (`panel_custom` + web component) | ✅ | M8 |
+| Websocket-API (snapshot + config get/update) | ✅ | M8 |
+| Setup-wizard met apparaten + sturing | ✅ | M8 |
 
 ---
 
