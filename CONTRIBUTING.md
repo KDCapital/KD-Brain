@@ -46,4 +46,4 @@ CI draait daarnaast `hassfest` en HACS-validatie.
 ## Commits & PRs
 
 - Kleine, gefocuste commits met duidelijke berichten.
-- Beschrijf in de PR wát en wáárom; verwijs naar de relevante mijlpaal (M1–M7).
+- Beschrijf in de PR wát en wáárom; verwijs naar de relevante mijlpaal (M1–M8).

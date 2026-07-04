@@ -7,7 +7,7 @@ This document tracks progress against the [Integration Quality Scale](https://de
 > omitted from this custom component to keep `hassfest` validation clean. This document is the
 > human-readable equivalent.
 
-## Bronze — foundation (M1, in progress)
+## Bronze — foundation (complete)
 
 - [x] Config flow (UI setup, no YAML)
 - [x] Options flow
@@ -23,10 +23,11 @@ This document tracks progress against the [Integration Quality Scale](https://de
 
 ## Silver — robustness (M2–M3)
 
-- [ ] Graceful degradation when a data source is temporarily unavailable
-- [ ] Reauthentication flow for token-based sources (ENTSO-E)
-- [ ] Full test coverage of error paths
-- [ ] Parameterised, deterministic engine tests
+- [x] Graceful degradation when a data source is temporarily unavailable
+      (coordinator marks data stale and raises a repair instead of crashing)
+- [ ] Reauthentication flow for token-based sources (ENTSO-E, deferred)
+- [x] Parameterised, deterministic engine tests (pure `SystemState` fixtures)
+- [ ] Full test coverage of every error path
 
 ## Gold — polish (M5–M7)
 
@@ -37,10 +38,14 @@ This document tracks progress against the [Integration Quality Scale](https://de
 - [x] Stale-state handling and availability for every entity (all entities are
       `CoordinatorEntity` subclasses; `available` follows
       `coordinator.last_update_success`)
-- [x] Comprehensive documentation and examples (README, `docs/dashboard.md`)
+- [x] Comprehensive documentation and examples (README, `docs/dashboard.md`,
+      `docs/panel.md`)
 - [x] Benchmarks for the optimization engine (heuristic + optional MILP,
       48h/15-min horizon, `tests/test_benchmarks.py`)
 - [x] Auto-generated dashboard (`kd_brain.generate_dashboard` service)
+- [x] Custom sidebar panel with in-panel configuration (M8: `panel_custom` web
+      component + `kd_brain/snapshot`, `kd_brain/config/get`,
+      `kd_brain/config/update` websocket commands)
 
 ## Platinum — excellence (post-Gold)
 
