@@ -1,3 +1,10 @@
+> # 🚧 Do not use this integration yet!
+> **We are still working on this project and it is not ready yet.** Installing KD Brain on a
+> production Home Assistant instance is **not** recommended at this stage — things will change and
+> break. _Gebruik deze integratie nog niet: we zijn er nog volop mee bezig en hij is nog niet klaar._
+
+---
+
 # KD Brain
 
 > Open-source **Home Energy Management System (HEMS)** voor Nederland, gebouwd als native
