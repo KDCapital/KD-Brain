@@ -45,5 +45,5 @@ Data comes from three sources:
 - The panel styles itself from your active Home Assistant theme.
 - If you don't see it in the sidebar after install, reload the integration or
   refresh the browser (the panel module is versioned to bust the cache).
-- The classic per-entity cards and the `kd_brain.generate_dashboard` service
-  remain available if you prefer a Lovelace dashboard.
+- You can still build your own Lovelace dashboard from KD Brain's entities if
+  you prefer one; the panel complements rather than replaces standard dashboards.

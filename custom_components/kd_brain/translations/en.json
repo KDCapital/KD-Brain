@@ -327,16 +327,6 @@
     "recalculate": {
       "name": "Recalculate",
       "description": "Force KD Brain to fetch the latest prices and recompute immediately."
-    },
-    "generate_dashboard": {
-      "name": "Generate dashboard",
-      "description": "Build an auto-generated Lovelace dashboard from the currently configured entities.",
-      "fields": {
-        "entry_id": {
-          "name": "Config entry",
-          "description": "Which KD Brain config entry to build the dashboard for. Defaults to the only (or first) loaded entry."
-        }
-      }
     }
   },
   "issues": {

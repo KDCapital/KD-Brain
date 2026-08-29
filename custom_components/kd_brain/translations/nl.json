@@ -277,16 +277,6 @@
     "recalculate": {
       "name": "Herberekenen",
       "description": "Laat KD Brain direct de nieuwste prijzen ophalen en opnieuw berekenen."
-    },
-    "generate_dashboard": {
-      "name": "Dashboard genereren",
-      "description": "Bouw een automatisch gegenereerd Lovelace-dashboard op basis van de geconfigureerde entiteiten.",
-      "fields": {
-        "entry_id": {
-          "name": "Config entry",
-          "description": "Voor welke KD Brain config entry het dashboard gebouwd moet worden. Standaard de enige (of eerste) geladen entry."
-        }
-      }
     }
   },
   "issues": {

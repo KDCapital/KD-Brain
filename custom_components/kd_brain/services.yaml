@@ -3,19 +3,3 @@ recalculate:
   description: >-
     Force KD Brain to fetch the latest prices and recompute immediately,
     instead of waiting for the next scheduled update.
-generate_dashboard:
-  name: Generate dashboard
-  description: >-
-    Build an auto-generated Lovelace dashboard (views/cards) from the entities
-    currently configured for a KD Brain config entry. Returns the dashboard
-    config as response data; paste it into a new dashboard in YAML mode.
-  fields:
-    entry_id:
-      name: Config entry
-      description: >-
-        Which KD Brain config entry to build the dashboard for. Defaults to
-        the only (or first) loaded entry.
-      required: false
-      selector:
-        config_entry:
-          integration: kd_brain

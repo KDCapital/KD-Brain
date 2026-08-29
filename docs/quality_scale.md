@@ -38,11 +38,11 @@ This document tracks progress against the [Integration Quality Scale](https://de
 - [x] Stale-state handling and availability for every entity (all entities are
       `CoordinatorEntity` subclasses; `available` follows
       `coordinator.last_update_success`)
-- [x] Comprehensive documentation and examples (README, `docs/dashboard.md`,
-      `docs/panel.md`)
+- [x] Comprehensive documentation and examples (README, `docs/panel.md`)
 - [x] Benchmarks for the optimization engine (heuristic + optional MILP,
       48h/15-min horizon, `tests/test_benchmarks.py`)
-- [x] Auto-generated dashboard (`kd_brain.generate_dashboard` service)
+- [ ] ~~Auto-generated dashboard (`kd_brain.generate_dashboard` service)~~ —
+      removed after M8; superseded by the built-in sidebar panel
 - [x] Custom sidebar panel with in-panel configuration (M8: `panel_custom` web
       component + `kd_brain/snapshot`, `kd_brain/config/get`,
       `kd_brain/config/update` websocket commands)

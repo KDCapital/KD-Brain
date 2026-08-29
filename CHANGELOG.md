@@ -39,6 +39,11 @@ All notable changes to KD Brain are documented in this file. The format is based
   heuristic and optional MILP optimiser's runtime over a 48h/15-minute
   horizon.
 
+### Removed
+- **Auto-generated dashboard**: the `kd_brain.generate_dashboard` service and
+  `docs/dashboard.md` are removed — the built-in KD Brain sidebar panel (M8) is
+  now the only UI. The `kd_brain.recalculate` service remains unchanged.
+
 ### Added — M6: EV & heat pump optimization (opt-in)
 - **EV smart charging** (M6a): reads an EV charger's connected/power/SOC entities, plans a charge
   current from cheap prices, solar surplus and a target SOC, and enforces IEC 61851 (0 A or at

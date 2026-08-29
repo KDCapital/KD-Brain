@@ -59,9 +59,7 @@ in de zijbalk waarin je alles ziet én instelt.
   grafieken voor prijs, SOC, vermogen en week-energie. Je stelt er **alles** direct in — apparaten/
   sensoren, strategieën, sturing, EV en warmtepomp. Zie [`docs/panel.md`](docs/panel.md).
 - 🩺 **Diagnostics** (zonder gevoelige data), **Repairs** bij providerstoringen, volledige
-  **Config Flow**, **Options Flow** en **reconfigure-flow** — geen YAML nodig. Optioneel een
-  auto-gegenereerd Lovelace-dashboard via de service `kd_brain.generate_dashboard`
-  (zie [`docs/dashboard.md`](docs/dashboard.md)).
+  **Config Flow**, **Options Flow** en **reconfigure-flow** — geen YAML nodig.
 
 ## Roadmap
 
@@ -73,7 +71,7 @@ in de zijbalk waarin je alles ziet én instelt.
 | **M4** ✅ | Safety layer + actuators — echte sturing van de batterij (opt-in) |
 | **M5** ✅ | Peak shaving, backup-reserve, NL-regelgeving 2026/2027/2029, PV-forecast, optionele MILP |
 | **M6** ✅ | EV slim laden (IEC 61851) + warmtepomp-optimalisatie (stooklijn-offset), beide opt-in |
-| **M7** ✅ | Auto-dashboard-service, reconfigure-flow, entity-categorieën, optimizer-benchmarks, Quality Scale Gold |
+| **M7** ✅ | Reconfigure-flow, entity-categorieën, optimizer-benchmarks, Quality Scale Gold |
 | **M8** ✅ | Eigen sidebar-paneel (5 tabs, live grafieken) + websocket-API + in-paneel-configuratie |
 
 Zie [het architectuurplan](#architectuur) en `CHANGELOG.md` voor details.
